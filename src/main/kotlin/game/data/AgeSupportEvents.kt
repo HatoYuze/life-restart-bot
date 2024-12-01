@@ -1,6 +1,6 @@
 package com.github.hatoyuze.restarter.game.data
 
-import com.github.hatoyuze.restarter.PluginMain
+import com.github.hatoyuze.restarter.mirai.ResourceManager
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -19,7 +19,7 @@ data class AgeSupportEvents(val age: Int, val events: Map<Int,Double>) {
             return event.associate {
                 if (it.isString) {
                     val element = it.content.split('*')
-                    element[0].toInt() to element[1].toDouble()
+                    element[0].toInt() to (element.getOrNull(1)?.toDouble() ?: 1.0)
                 }else {
                     it.int to 1.0
                 }
@@ -30,7 +30,7 @@ data class AgeSupportEvents(val age: Int, val events: Map<Int,Double>) {
     companion object {
         val data by lazy {
             val jsonContent =
-                PluginMain.getResource("data/ages.json") ?: error("Can not find resources: ages")
+                ResourceManager.getResource("data/ages.json") ?: error("Can not find resources: ages")
             val json = Json {
                 ignoreUnknownKeys = true
             }

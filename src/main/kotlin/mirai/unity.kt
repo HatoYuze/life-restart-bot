@@ -11,6 +11,19 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import java.io.File
+
+object ResourceManager {
+    internal var isTesting = false
+
+    fun getResource(path: String): String? {
+        return if (isTesting) File(System.getProperty("user.dir") + "/src/main/resources/$path").readText()
+        else PluginMain.getResource(path)
+    }
+}
+
+
+
 
 suspend fun CommandContext.quote(message: Message) =
     sender.subject?.sendMessage(message + originalMessage.quote()) ?: sender.sendMessage(message)

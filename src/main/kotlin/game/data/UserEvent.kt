@@ -1,11 +1,11 @@
 package com.github.hatoyuze.restarter.game.data
 
-import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.game.data.serialization.ConditionExpressionSerializer
-import com.github.hatoyuze.restarter.game.data.serialization.UserEventBranchSerializer
 import com.github.hatoyuze.restarter.game.data.serialization.ReferEventId
+import com.github.hatoyuze.restarter.game.data.serialization.UserEventBranchSerializer
 import com.github.hatoyuze.restarter.game.entity.Attribute
 import com.github.hatoyuze.restarter.game.entity.AttributeType
+import com.github.hatoyuze.restarter.mirai.ResourceManager
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -41,7 +41,7 @@ data class UserEvent @JvmOverloads constructor(
     companion object {
         val data by lazy {
             val jsonContent =
-                PluginMain.getResource("data/events.json") ?: error("Can not find resources: events")
+                ResourceManager.getResource("data/events.json") ?: error("Can not find resources: events")
             val json = Json {
                 ignoreUnknownKeys = true
             }

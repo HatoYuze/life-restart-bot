@@ -93,9 +93,6 @@ data class Life(
         return talents
     }
 
-    fun getProperty(): Property {
-        return property
-    }
 
     fun randomUserEvent(ageUserEvent: AgeSupportEvents): Int {
         val ageUserEventHashMap = ageUserEvent.events

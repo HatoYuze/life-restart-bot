@@ -14,7 +14,7 @@ enum class AttributeType {
     TLT,  //天赋
     LIF,  //寿命
     EVT,  //事件
-    RND,  //随机
+    RDM,  //随机
     TMS,  //wtf??
     AET,  //前一个事件
 }
@@ -48,7 +48,7 @@ data class Attribute @JvmOverloads constructor(
         AttributeType.LIF -> lifeAge
         AttributeType.TMS -> tms
         AttributeType.AET -> events.last()
-        AttributeType.RND -> {
+        AttributeType.RDM -> {
             val randomNumber = (Math.random() * 5).toInt()
             when (randomNumber) {
                 0 -> appearance
@@ -77,7 +77,7 @@ data class Attribute @JvmOverloads constructor(
             AttributeType.MNY -> money += value
             AttributeType.SPR -> spirit += value
             AttributeType.LIF -> lifeAge += value
-            AttributeType.RND -> repeat(value) {
+            AttributeType.RDM -> repeat(value) {
                 val randomNumber = (Math.random() * 5).toInt()
                 when (randomNumber) {
                     0 -> appearance += 1

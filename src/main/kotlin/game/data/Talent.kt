@@ -1,10 +1,11 @@
 package com.github.hatoyuze.restarter.game.data
 
-import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.game.data.serialization.ConditionExpressionSerializer
 import com.github.hatoyuze.restarter.game.entity.Attribute
 import com.github.hatoyuze.restarter.game.entity.AttributeType
+import com.github.hatoyuze.restarter.mirai.ResourceManager
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -17,7 +18,7 @@ data class Talent @JvmOverloads constructor(
     val id: Int,
     val name: String,
 
-    val exclusive: List<String> = listOf(),
+    val exclusive0: List<JsonPrimitive> = listOf(),
     val effect: Map<AttributeType, Int> = emptyMap(),
     @Serializable(with = ConditionExpressionSerializer::class)
     val condition: ConditionExpression? = null,
@@ -25,6 +26,9 @@ data class Talent @JvmOverloads constructor(
     // 选择该天赋后初始可用属性点变化值
     val status: Int = 0
 ) {
+    @Transient
+    val exclusive = exclusive0.map { it.content }
+
     fun applyEffect(attribute: Attribute) {
         with(attribute) {
             for ((type, changedValue) in effect) {
@@ -59,7 +63,7 @@ data class Talent @JvmOverloads constructor(
     companion object {
         val data by lazy {
             val jsonContent =
-                PluginMain.getResource("data/talents.json") ?: error("Can not find resources: talents")
+                ResourceManager.getResource("data/talents.json") ?: error("Can not find resources: talents")
             val json = Json {
                 ignoreUnknownKeys = true
             }
