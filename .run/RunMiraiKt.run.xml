@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="RunMiraiKt" type="JetRunConfigurationType" nameIsGenerated="true">
-    <option name="MAIN_CLASS_NAME" value="org.example.mirai.plugin.RunMiraiKt" />
+    <option name="MAIN_CLASS_NAME" value="com.github.hatoyuze.restarter.RunMiraiKt" />
     <module name="mirai-console-plugin-template.test" />
     <shortenClasspath name="NONE" />
     <method v="2">
