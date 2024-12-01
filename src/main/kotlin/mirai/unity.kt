@@ -53,7 +53,7 @@ suspend fun CommandContext.nextMessageMemberOrNull(
 ): MessageChain? {
     val eventChannel = GlobalEventChannel.parentScope(PluginMain)
     val mapping: suspend (MessageEvent) -> MessageEvent? = mapping@{
-        if (this.subject != it.subject) return@mapping null
+        if (this.subject != it.subject || this.sender != it.sender) return@mapping null
         if (!filter(it)) return@mapping null
         it
     }
