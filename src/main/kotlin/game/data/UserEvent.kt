@@ -39,13 +39,13 @@ data class UserEvent @JvmOverloads constructor(
         }
     }
     companion object {
-        val data by lazy {
+        val data: MutableMap<Int, UserEvent> by lazy {
             val jsonContent =
                 ResourceManager.getResource("data/events.json") ?: error("Can not find resources: events")
             val json = Json {
                 ignoreUnknownKeys = true
             }
-            json.decodeFromString<Map<String,UserEvent>>(jsonContent).mapKeys { it.key.toInt() }
+            json.decodeFromString<Map<String, UserEvent>>(jsonContent).mapKeys { it.key.toInt() }.toMutableMap()
         }
     }
 }

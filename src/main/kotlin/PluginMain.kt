@@ -1,6 +1,7 @@
 package com.github.hatoyuze.restarter
 
 import com.github.hatoyuze.restarter.mirai.RestartLifeCommand
+import com.github.hatoyuze.restarter.mirai.config.RegisterEventConfig
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.PermissionService
@@ -28,6 +29,9 @@ object PluginMain : KotlinPlugin(
         CommandManager.INSTANCE.registerCommand(
             RestartLifeCommand
         )
+        RegisterEventConfig.reload()
+        RegisterEventConfig.handleEvent()
+
         commandPermission
     }
 

@@ -31,8 +31,7 @@ internal object UserEventBranchSerializer :
         }
 
         override fun serialize(encoder: Encoder, value: Pair<ConditionExpression, ReferEventId>) {
-            System.err.println("You shouldn't serialize a 'Pair<ConditionExpression, ReferEventId>' object!")
-            encoder.encodeString("${value.first}:${value.second}")
+            encoder.encodeString("${ConditionExpressionSerializer.buildOriginString(value.first)}:${value.second}")
         }
 
     }

@@ -180,12 +180,22 @@ class SimpleConditionExpression(
                 member, type, range
             )
         }
+        fun originalExpression(value: SimpleConditionExpression) = buildString {
+            append(value.member)
+            append(value.type.expression)
+            when {
+                value.type == RANGE_EXCLUDES || value.type == RANGE_CONTAINS -> append(
+                    value.range.toString().replace(" ", "")
+                )
+
+                value.range.size == 1 -> append(value.range.first())
+                else -> throw IllegalStateException("除了 `?` 和 `!` 判别符以外，不应该有包含多个对象的元素! -> ${value.range}")
+            }
+        }
 
         override fun serialize(encoder: Encoder, value: SimpleConditionExpression) {
             encoder.encodeString(
-                "${value.member}${value.type.expression}${
-                    if (value.range.size == 1) value.range.first().toString() else value.range.toString()
-                }"
+                originalExpression(value)
             )
         }
 

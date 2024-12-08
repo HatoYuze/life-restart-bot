@@ -19,22 +19,24 @@ object ConditionExpressionSerializer : KSerializer<ConditionExpression> {
         )
 
     override fun deserialize(decoder: Decoder): ConditionExpression {
-        return ConditionExpression.parseExpression(decoder.decodeString())
+        return ConditionExpression.parseExpression(decoder.decodeString().replace(" ", ""))
+    }
+
+    internal fun buildOriginString(value: ConditionExpression): String {
+        return when (value) {
+            is SimpleConditionExpression -> SimpleConditionExpression.originalExpression(value)
+            is ComplexConditionExpression -> {
+                value.expressions.joinToString(value.operator!!.symbol) {
+                    "(${buildOriginString(it)})"
+                }
+            }
+
+            NoCondition -> ""
+        }
     }
 
     override fun serialize(encoder: Encoder, value: ConditionExpression) {
-        when (value) {
-            is ComplexConditionExpression -> {
-                System.err.println("You should not serialize a ComplexConditionExpression instance")
-                encoder.encodeString(
-                    value.expressions.joinToString(
-                        separator = value.operator?.symbol ?: ""
-                    ) { "($it)" })
-            }
-
-            is SimpleConditionExpression -> SimpleConditionExpression.serializer().serialize(encoder, value)
-            NoCondition -> encoder.encodeString("")
-        }
+        encoder.encodeString(buildOriginString(value))
     }
 
 }

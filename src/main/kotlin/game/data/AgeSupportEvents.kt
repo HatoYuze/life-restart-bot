@@ -9,13 +9,13 @@ import kotlinx.serialization.json.int
 
 
 @Serializable
-data class AgeSupportEvents(val age: Int, val events: Map<Int,Double>) {
+data class AgeSupportEvents(val age: Int, val events: MutableMap<Int, Double>) {
     @Serializable
     private data class AgesEventMapping0(
         val age: Int,
         val event: List<JsonPrimitive>
     ) {
-        fun translate(): Map<Int, Double> {
+        fun translate(): MutableMap<Int, Double> {
             return event.associate {
                 if (it.isString) {
                     val element = it.content.split('*')
@@ -23,7 +23,7 @@ data class AgeSupportEvents(val age: Int, val events: Map<Int,Double>) {
                 }else {
                     it.int to 1.0
                 }
-            }
+            }.toMutableMap()
         }
     }
 
@@ -37,6 +37,7 @@ data class AgeSupportEvents(val age: Int, val events: Map<Int,Double>) {
             json.decodeFromString<Map<String,AgesEventMapping0>>(jsonContent)
                 .mapKeys { it.key.toInt() }
                 .mapValues { AgeSupportEvents(it.key,it.value.translate()) }
+                .toMutableMap()
         }
     }
 }
