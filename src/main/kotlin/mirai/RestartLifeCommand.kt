@@ -70,12 +70,12 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
                 sender = commandContext.sender.user!!,
                 message = PlainText(
                     """
-                                您拥有以下天赋：
-                                ${engine.talent.joinToString("\n") { it.introduction }}
-                                
-                                您的初始属性点如下：
-                                智慧：${initialProperty.intelligent}, 力量：${initialProperty.strength}, 外貌：${initialProperty.appearance}
-                                快乐：${initialProperty.spirit}, 家境：${initialProperty.money}
+您拥有以下天赋：
+${engine.talent.joinToString("\n") { it.introduction }}
+
+您的初始属性点如下：
+智慧：${initialProperty.intelligent}, 力量：${initialProperty.strength}, 外貌：${initialProperty.appearance}
+快乐：${initialProperty.spirit}, 家境：${initialProperty.money}
                             """.trimIndent()
                 )
             )
