@@ -23,7 +23,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
                 appendLine("   ${talent.description}")
             }
         })
-        val nextMessage = nextMessageMemberOrNull { true }?.content ?: run {
+        val nextMessage = nextMessageMemberOrNull(60_000L) { true }?.content ?: run {
             quote("已超时！自动停止任务！")
             return@command
         }

@@ -23,8 +23,6 @@ object ResourceManager {
 }
 
 
-
-
 suspend fun CommandContext.quote(message: Message) =
     sender.subject?.sendMessage(message + originalMessage.quote()) ?: sender.sendMessage(message)
 
@@ -45,7 +43,6 @@ suspend inline fun CommandContext.sendForwardMessage(
 ) = subject.sendMessage(buildForwardMessage(subject, displayStrategy, block))
 
 
-
 suspend fun CommandContext.nextMessageMemberOrNull(
     timeoutMillis: Long = -1,
     priority: EventPriority = EventPriority.NORMAL,
@@ -53,7 +50,8 @@ suspend fun CommandContext.nextMessageMemberOrNull(
 ): MessageChain? {
     val eventChannel = GlobalEventChannel.parentScope(PluginMain)
     val mapping: suspend (MessageEvent) -> MessageEvent? = mapping@{
-        if (this.subject != it.subject || this.sender != it.sender) return@mapping null
+        val isSameContext = this.sender.user?.id == it.sender.id && this.subject.id == it.subject.id
+        if (!isSameContext) return@mapping null
         if (!filter(it)) return@mapping null
         it
     }
