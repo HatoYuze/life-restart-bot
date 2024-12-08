@@ -33,10 +33,11 @@ sealed class ConditionExpression {
     }
 
     companion object {
-        fun parseExpression(expression: String): ConditionExpression {
-            if (expression.isEmpty()) {
+        fun parseExpression(expression0: String): ConditionExpression {
+            if (expression0.isEmpty()) {
                 return NoCondition
             }
+            val expression = expression0.replace(" ", "")
             val index = findBalancedParentheses(expression)
             val pairExpressionIndex = expression.indexOf('|')
             val isDoubleExpression =  pairExpressionIndex != -1 && index == 0

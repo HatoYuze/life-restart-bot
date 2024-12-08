@@ -143,7 +143,7 @@ object RegisterEventConfig : AutoSavePluginConfig("register") {
 
     @ValueDescription(
         """
-        事件可以被触发的年龄(范围为 0 到 500 岁,且为整数)，尾部的表达式按照以下规律
+        事件可以被触发的年龄(范围为 0 到 500 岁,且为整数)，键值的表达式按照以下规律
         - start..end -> start ≤ x < end
         - start..=end -> start ≤ x ≤ end
         - ..end	-> 0 ≤ x < end

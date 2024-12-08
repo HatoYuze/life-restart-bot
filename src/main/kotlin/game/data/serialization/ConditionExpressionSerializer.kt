@@ -19,14 +19,14 @@ object ConditionExpressionSerializer : KSerializer<ConditionExpression> {
         )
 
     override fun deserialize(decoder: Decoder): ConditionExpression {
-        return ConditionExpression.parseExpression(decoder.decodeString().replace(" ", ""))
+        return ConditionExpression.parseExpression(decoder.decodeString())
     }
 
     internal fun buildOriginString(value: ConditionExpression): String {
         return when (value) {
             is SimpleConditionExpression -> SimpleConditionExpression.originalExpression(value)
             is ComplexConditionExpression -> {
-                value.expressions.joinToString(value.operator!!.symbol) {
+                value.expressions.joinToString(" ${value.operator!!.symbol} ") {
                     "(${buildOriginString(it)})"
                 }
             }

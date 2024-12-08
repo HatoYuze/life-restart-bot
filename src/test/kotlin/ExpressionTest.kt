@@ -11,7 +11,7 @@ class ExpressionTest {
         return when (value) {
             is SimpleConditionExpression -> SimpleConditionExpression.originalExpression(value)
             is ComplexConditionExpression -> {
-                value.expressions.joinToString(value.operator!!.symbol) {
+                value.expressions.joinToString(" " + value.operator!!.symbol + " ") {
                     "(${buildOriginString(it)})"
                 }
             }
@@ -23,7 +23,7 @@ class ExpressionTest {
     @Test
     fun test() {
         val expression = ConditionExpression.parseExpression(
-            "(EVT?[10009])&((INT?[10001,10110,10111])|(AGE>50))"
+            "(EVT?[10009]) & ( (INT?[10001,10110,10111]) | (AGE>50) )"
         )
 
         println(expression)
