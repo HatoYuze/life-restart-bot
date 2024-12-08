@@ -10,4 +10,10 @@ class LifeEngineBuilder {
     var money: Int = 5
     var spirit: Int = 5
     var talents = listOf<Talent>()
+        set(value) {
+            val exclusive = mutableListOf<Int>()
+            value.onEach { exclusive.addAll(it.exclusive) }
+            require(value.none { it.id in exclusive }) { "选择了互相排斥的天赋！" }
+            field = value
+        }
 }

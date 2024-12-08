@@ -4,6 +4,7 @@ import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.game.LifeEngine
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.command.isNotUser
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
@@ -41,7 +42,6 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
             return@command
         }
         val talents = selected.map { selectList.getOrElse(it - 1) { selectList.random() } }
-        // todo: 支持自动更改的天赋
 
         val engine = LifeEngine {
             appearance = (0..15).random()
@@ -49,20 +49,29 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
             intelligent = (0..15).random()
             money = (0..15).random()
             spirit = (0..15).random()
-            this.talents = talents
+        }
+
+        try {
+            engine.talent = talents
+        } catch (e: IllegalArgumentException) {
+            quote("选择了相互冲突的天赋，已停止！")
+            return@command
         }
 
         val lifeList = engine.toList()
         val initialProperty = lifeList[0].property
 
+        if (sender.isNotUser()) {
+            println(lifeList.joinToString { "${it.property.lifeAge}岁: ${it.name}" })
+        }
+
         sendForwardMessage {
             add(
-                senderId = fromContact,
-                senderName = from?.nick ?: "不愿意透露姓名的某人",
+                sender = commandContext.sender.user!!,
                 message = PlainText(
                     """
-                                您选择的天赋为：
-                                ${talents.joinToString(", ") { it.name }}
+                                您拥有以下天赋：
+                                ${engine.talent.joinToString("\n") { it.introduction }}
                                 
                                 您的初始属性点如下：
                                 智慧：${initialProperty.intelligent}, 力量：${initialProperty.strength}, 外貌：${initialProperty.appearance}
@@ -72,8 +81,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
             )
             for ((base, i) in lifeList.chunked(20).withIndex()) {
                 add(
-                    senderId = fromContact,
-                    senderName = from?.nick ?: "不愿意透露姓名的某人",
+                    sender = commandContext.sender.user!!,
                     message = PlainText(
                         buildString {
                             for ((offset, event) in i.withIndex()) {
@@ -85,12 +93,10 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
                 )
             }
             add(
-                senderId = fromContact,
-                senderName = from?.nick ?: "不愿意透露姓名的某人", message = PlainText("以上为模拟结果。以下为结算：")
+                sender = commandContext.sender.user!!, message = PlainText("以上为模拟结果。以下为结算：")
             )
             add(
-                senderId = fromContact,
-                senderName = from?.nick ?: "不愿意透露姓名的某人", message = PlainText(
+                sender = commandContext.sender.user!!, message = PlainText(
                     buildString {
                         with(engine.ratingStatus) {
                             appendLine("颜值：${appearance.value} ${appearance.judge}")

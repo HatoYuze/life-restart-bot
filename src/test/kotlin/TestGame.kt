@@ -66,8 +66,8 @@ class TestGame {
 
         println(
             """
-|您选择的天赋为：
-|${talents.joinToString(", ") { it.name }}
+|您选择天赋为：
+|${engine.talent.joinToString("\n") { it.introduction }}
 |
 |您的初始属性点如下：
 |智慧：${initialProperty.intelligent}, 力量：${initialProperty.strength}, 外貌：${initialProperty.appearance}

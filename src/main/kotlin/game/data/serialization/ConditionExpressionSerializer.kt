@@ -33,7 +33,7 @@ object ConditionExpressionSerializer : KSerializer<ConditionExpression> {
             }
 
             is SimpleConditionExpression -> SimpleConditionExpression.serializer().serialize(encoder, value)
-            NoCondition -> {}
+            NoCondition -> encoder.encodeString("")
         }
     }
 

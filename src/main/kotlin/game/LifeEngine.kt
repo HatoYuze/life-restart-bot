@@ -1,20 +1,24 @@
 package com.github.hatoyuze.restarter.game
 
-import com.github.hatoyuze.restarter.game.data.AgeSupportEvents
 import com.github.hatoyuze.restarter.game.data.Talent
-import com.github.hatoyuze.restarter.game.data.UserEvent
 import com.github.hatoyuze.restarter.game.entity.Attribute
 import com.github.hatoyuze.restarter.game.entity.Life
+import com.github.hatoyuze.restarter.game.entity.TalentManager
 
 class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
-    private val life = Life(
-        userEventHashMap = eventMap,
-        ageUserEventHashMap = ageMap,
-        talentHashMap = talentMap
-    )
+    private val life = Life()
+    var talent: List<Talent>
 
     init {
         val initial = LifeEngineBuilder().apply(builder)
+        val talents = initial.talents.map {
+            if (it.replacement != null) {
+                it.replacement.replace()
+            } else it
+        }
+
+        talent = talents
+
         val attr = Attribute(
             -1,
             initial.appearance,
@@ -23,7 +27,7 @@ class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
             initial.money,
             initial.spirit,
             1,
-            talents = initial.talents.map { it.id }.toMutableList()
+            talents = talents.map { it.id }.toMutableList()
         )
         life.restartLife(attr)
     }
@@ -47,24 +51,22 @@ class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
 
 
     companion object {
-        private val eventMap = UserEvent.data
-        private val ageMap = AgeSupportEvents.data
         private val talentMap = Talent.data
 
-        fun randomTalent(): List<Talent> = List(10) { talentMap.values.random() }
+        fun randomTalent(): List<Talent> = TalentManager.talentRandom(10)
 
         fun searchTalent(id: Int): Talent = talentMap.entries.find { it.key == id }!!.value
     }
 
     val iterator = object : Iterator<LifeEvent> {
         override fun hasNext(): Boolean {
-            return !life.isLifeEnd()
+            return life.hasNext()
         }
 
         override fun next(): LifeEvent {
             val next = life.next()
             return LifeEvent(
-                name = next.joinToString("\n") { it.first.eventName },
+                name = next.desc(),
                 property = with(life.property.attribute) {
                     LifeEvent.Attribute(
                         appearance,

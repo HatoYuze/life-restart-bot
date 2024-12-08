@@ -1,22 +1,33 @@
 package com.github.hatoyuze.restarter.game.entity
 
 import com.github.hatoyuze.restarter.game.data.Talent
-import kotlinx.serialization.Serializable
 import kotlin.math.floor
+import com.github.hatoyuze.restarter.game.data.Talent.Companion.data as talentHashMap
 
-@Serializable
-class TalentManager private constructor(
-    val talentHashMap: Map<Int,Talent>,
-    private val percentageGrade3: Double = 0.1,
-    private val percentageGrade2: Double = 0.2,
-    private val percentageGrade1: Double = 0.333,
-) {
-    constructor(talentHashMap: Map<Int, Talent>) : this(talentHashMap, 0.1, 0.2, 0.333)
-
+interface ITalentManager {
     /**
+     * 实现对 天赋效果条件 的判断作用, 当符合条件时 返回 [talentId] 对应的 [Talent]
      * @return 不符合条件 或 不存在时为 null
      * */
-    fun talentTakeEffect(talentId: Int, property: Attribute): Talent? {
+    fun talentTakeEffect(talentId: Int, property: Attribute): Talent?
+
+    /**
+     * 随机抽取天赋
+     * */
+    fun talentRandom(listSize: Int): List<Talent>
+
+    companion object {
+        val INSTANCE = TalentManager
+    }
+}
+
+
+object TalentManager : ITalentManager {
+    private const val PERCENT_GRADE_3: Double = 0.1
+    private const val PERCENT_GRADE_2: Double = 0.2
+    private const val PERCENT_GRADE_1: Double = 0.333
+
+    override fun talentTakeEffect(talentId: Int, property: Attribute): Talent? {
         val talent = talentHashMap[talentId] ?: return null
         return talent.condition?.let {
             if (!it.judgeAll(property)) null
@@ -26,14 +37,14 @@ class TalentManager private constructor(
 
     // won't show talentHashMap.
     override fun toString(): String {
-        return "Talents{" +
-            "percentageGrade3=" + percentageGrade3 +
-            ", percentageGrade2=" + percentageGrade2 +
-            ", percentageGrade1=" + percentageGrade1 +
+        return "TalentManager {" +
+            "percentageGrade3=" + PERCENT_GRADE_3 +
+            ", percentageGrade2=" + PERCENT_GRADE_2 +
+            ", percentageGrade1=" + PERCENT_GRADE_1 +
             '}'
     }
 
-    fun talentRandom(listSize: Int): List<Talent> {
+    override fun talentRandom(listSize: Int): List<Talent> {
         val talentList: MutableList<Talent> = ArrayList()
         val talentClassedByGrade = HashMap<Int, MutableList<Talent>>()
         for (i in 0..3) talentClassedByGrade[i] = ArrayList()
@@ -47,9 +58,9 @@ class TalentManager private constructor(
             var grade: Int
             val gradeRandom = Math.random()
             grade = when {
-                gradeRandom <= percentageGrade3 -> 3
-                gradeRandom <= percentageGrade2 -> 2
-                gradeRandom <= percentageGrade1 -> 1
+                gradeRandom <= PERCENT_GRADE_3 -> 3
+                gradeRandom <= PERCENT_GRADE_2 -> 2
+                gradeRandom <= PERCENT_GRADE_1 -> 1
                 else -> 0
             }
             val len = talentClassedByGrade[grade]!!.size

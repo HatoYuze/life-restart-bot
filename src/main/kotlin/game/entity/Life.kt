@@ -1,35 +1,18 @@
 package com.github.hatoyuze.restarter.game.entity
 
 import com.github.hatoyuze.restarter.game.data.AgeSupportEvents
-import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
 import kotlinx.serialization.Serializable
-import java.util.*
+import com.github.hatoyuze.restarter.game.data.UserEvent.Companion.data as GlobalEventLibrary
 
 typealias UserEventToAge = Pair<UserEvent, Int>
 
 @Serializable
 data class Life(
     var triggerTalent: MutableList<Int> = mutableListOf(),
-    var property: Property,
-    var userEventHashMap: Map<Int, UserEvent>,
-    var talents: TalentManager
-) {
-    constructor(userEventHashMap: Map<Int, UserEvent>,
-                talentHashMap: Map<Int, Talent>,
-                ageUserEventHashMap: Map<Int, AgeSupportEvents>) : this(
-        mutableListOf(),
-        Property(ageEventHashMap = ageUserEventHashMap),
-        userEventHashMap,
-        TalentManager(talentHashMap)
-    )
-
-    fun getUserEventList(): List<UserEvent> {
-        val userEventList = property.attribute.events
-        val ans = ArrayList<UserEvent>()
-        userEventList.forEach { ans.add(userEventHashMap[it]!!) }
-        return ans
-    }
+    var property: Property
+) : Iterator<ExecutedEvent>, Sequence<ExecutedEvent> {
+    constructor() : this(mutableListOf(), Property())
 
     fun restartLife(attribute: Attribute) {
         property.restartProperty(attribute)
@@ -40,15 +23,15 @@ data class Life(
     fun doTalent() {
         val talentsList = getUnfinishedTalent()
         talentsList.forEach { value ->
-            val talent = talents.talentTakeEffect(value, property.attribute)
-            talent?.let {
+            val talent = TalentManager.talentTakeEffect(value, property.attribute) ?: return@forEach
+            talent.let {
                 triggerTalent.add(value)
                 property.takeEffect(it)
             }
         }
     }
 
-    fun next(): List<UserEventToAge> {
+    fun nextEvents(): List<UserEventToAge> {
         with(property.attribute) {
             AttributeType.AGE += 1
         }
@@ -58,15 +41,16 @@ data class Life(
         return finishUserEvent(userEventId)
     }
 
-    val age: Int get() {
-        return property.attribute.age
-    }
+    val age: Int
+        get() {
+            return property.attribute.age
+        }
 
-    fun finishUserEvent(userEventId: Int): List<UserEventToAge> {
+    private fun finishUserEvent(userEventId: Int): List<UserEventToAge> {
         val userEventList = ArrayList<UserEventToAge>()
         with(property.attribute) {
             AttributeType.EVT += userEventId
-            val userEvent = userEventHashMap[userEventId]!!
+            val userEvent = GlobalEventLibrary[userEventId]!!
             userEventList.add(UserEventToAge(userEvent, age))
             userEvent.applyEffect(this)
 
@@ -85,21 +69,14 @@ data class Life(
         return userEventList
     }
 
-    fun randomTalent(listSize: Int): List<Talent> {
-        return talents.talentRandom(listSize)
-    }
 
-    fun getTalentManager(): TalentManager {
-        return talents
-    }
-
-
-    fun randomUserEvent(ageUserEvent: AgeSupportEvents): Int {
+    private fun randomUserEvent(ageUserEvent: AgeSupportEvents): Int {
         val ageUserEventHashMap = ageUserEvent.events
         val ageUserEventCheckedHashMap = HashMap<Int, Double>()
         ageUserEventHashMap.keys.forEach { key ->
             if (checkUserEvent(key)) {
-                ageUserEventCheckedHashMap[key] = ageUserEventHashMap[key] ?: error("Unknown error, $ageUserEventHashMap excludes $key")
+                ageUserEventCheckedHashMap[key] =
+                    ageUserEventHashMap[key] ?: error("Unknown error, $ageUserEventHashMap excludes $key")
             }
         }
         var totalWeight = 0.0
@@ -116,21 +93,37 @@ data class Life(
         return 0
     }
 
-    fun checkUserEvent(userEventId: Int): Boolean {
-        val userEvent = userEventHashMap[userEventId] ?: error("Event id $userEventId does NOT exist")
-        return when{
+    private fun checkUserEvent(userEventId: Int): Boolean {
+        val userEvent = GlobalEventLibrary[userEventId] ?: error("Event id $userEventId does NOT exist")
+        return when {
             userEvent.noRandom -> false
             userEvent.exclude != null && userEvent.exclude.judgeAll(property.attribute) -> false
             else -> userEvent.include?.judgeAll(property.attribute) != false
         }
     }
 
-    fun getUnfinishedTalent(): List<Int> {
+    private fun getUnfinishedTalent(): List<Int> {
         val talentsList = property.attribute.talents
         return talentsList.filter { !triggerTalent.contains(it) }
     }
 
     fun isLifeEnd(): Boolean {
         return property.attribute.isEnd()
+    }
+
+    override fun iterator(): Iterator<ExecutedEvent> {
+        return this
+    }
+
+    override fun hasNext(): Boolean {
+        return !isLifeEnd()
+    }
+
+    override fun next(): ExecutedEvent {
+        val events = nextEvents().map { it.first }
+        return ExecutedEvent(
+            events.first(),
+            events.drop(1)
+        )
     }
 }

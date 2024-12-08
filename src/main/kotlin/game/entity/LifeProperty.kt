@@ -8,7 +8,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 class Property @JvmOverloads constructor(
     var attribute: Attribute = Attribute(),
-    var ageEventHashMap: Map<Int, AgeSupportEvents>
 ) {
     fun restartProperty(attribute: Attribute) {
         this.attribute = attribute
@@ -23,6 +22,6 @@ class Property @JvmOverloads constructor(
     }
 
     fun getAgeData(): AgeSupportEvents {
-        return ageEventHashMap[attribute.age] ?: error("No events match age ${attribute.age}")
+        return AgeSupportEvents.data[attribute.age] ?: error("No events match age ${attribute.age}")
     }
 }

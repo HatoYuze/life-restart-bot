@@ -34,6 +34,9 @@ sealed class ConditionExpression {
 
     companion object {
         fun parseExpression(expression: String): ConditionExpression {
+            if (expression.isEmpty()) {
+                return NoCondition
+            }
             val index = findBalancedParentheses(expression)
             val pairExpressionIndex = expression.indexOf('|')
             val isDoubleExpression =  pairExpressionIndex != -1 && index == 0

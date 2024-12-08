@@ -10,6 +10,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
+import kotlin.random.Random
 
 @Serializable
 data class Talent @JvmOverloads constructor(
@@ -18,6 +19,7 @@ data class Talent @JvmOverloads constructor(
     val id: Int,
     val name: String,
 
+    // 互相排斥的天赋
     val exclusive0: List<JsonPrimitive> = listOf(),
     val effect: Map<AttributeType, Int> = emptyMap(),
     @Serializable(with = ConditionExpressionSerializer::class)
@@ -27,7 +29,21 @@ data class Talent @JvmOverloads constructor(
     val status: Int = 0
 ) {
     @Transient
-    val exclusive = exclusive0.map { it.content }
+    val exclusive = exclusive0.map { it.content.toInt() }
+
+    val introduction: String
+        get() = buildString {
+            val gradeDescription = when (grade) {
+                1 -> "【蓝色】"
+                2 -> "【紫色】"
+                3 -> "【橙色】"
+                else -> "【白色】"
+            }
+            append(gradeDescription)
+            appendLine(name)
+            append("\t")
+            append(description)
+        }
 
     fun applyEffect(attribute: Attribute) {
         with(attribute) {
@@ -42,21 +58,48 @@ data class Talent @JvmOverloads constructor(
         val talent: List<JsonPrimitive> = emptyList(),
         val grade: List<Int> = emptyList()
     ) {
-        fun replace() {
+        fun replace(): Talent =
             when {
                 talent.isEmpty() && grade.isEmpty() -> data.values.random()
                 grade.isNotEmpty() -> {
                     data.values.filter { it.grade in grade }.random()
                 }
+
                 else -> {
-                    // todo: 支持 如 1048*0.2 的表达式(为概率？)
+                    // *n 表示总计算作有 n 份
                     val id = talent
-                        .map { if (it.isString) it.content.substringBefore('*').toInt() else it.int }
-                        .random()
+                        .associate {
+                            if (it.isString) {
+                                val content = it.content
+                                val point = content.indexOf('*')
+                                content.substring(0, point).toInt() to it.content.substring(point + 1).toDouble()
+                            } else it.int to 1.0
+                        }
+                        .randomSelectWeight()
+
                     data[id] ?: error("Talent id $id no found")
                 }
             }
 
+        private companion object {
+            fun <T> Map<T, Double>.randomSelectWeight(): T {
+                require(isNotEmpty()) { "The items list cannot be empty." }
+                val totalShares = values.sumOf { it }
+                require(totalShares > 0) { "The sum of shares must be greater than zero." }
+
+
+                val randomShareIndex = Random.nextDouble(totalShares) + 1
+                var cumulativeShares = 0.0
+
+                for ((item, probability) in this) {
+                    cumulativeShares += probability
+                    if (randomShareIndex <= cumulativeShares) {
+                        return item
+                    }
+                }
+
+                return this.keys.random()
+            }
         }
     }
 
@@ -67,7 +110,7 @@ data class Talent @JvmOverloads constructor(
             val json = Json {
                 ignoreUnknownKeys = true
             }
-            json.decodeFromString<HashMap<String,Talent>>(jsonContent).mapKeys { it.key.toInt() }
+            json.decodeFromString<HashMap<String, Talent>>(jsonContent).mapKeys { it.key.toInt() }
         }
     }
 }
