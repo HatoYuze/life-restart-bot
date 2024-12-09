@@ -4,6 +4,7 @@ import com.github.hatoyuze.restarter.game.data.serialization.ConditionExpression
 import com.github.hatoyuze.restarter.game.entity.Attribute
 import com.github.hatoyuze.restarter.game.entity.AttributeType
 import com.github.hatoyuze.restarter.mirai.ResourceManager
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString
@@ -20,6 +21,7 @@ data class Talent @JvmOverloads constructor(
     val name: String,
 
     // 互相排斥的天赋
+    @SerialName("exclusive")
     val exclusive0: List<JsonPrimitive> = listOf(),
     val effect: Map<AttributeType, Int> = emptyMap(),
     @Serializable(with = ConditionExpressionSerializer::class)

@@ -1,6 +1,7 @@
 package com.github.hatoyuze.restarter.game.entity
 
 import com.github.hatoyuze.restarter.game.data.AgeSupportEvents
+import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
 import kotlinx.serialization.Serializable
 import com.github.hatoyuze.restarter.game.data.UserEvent.Companion.data as GlobalEventLibrary
@@ -9,7 +10,7 @@ typealias UserEventToAge = Pair<UserEvent, Int>
 
 @Serializable
 data class Life(
-    var triggerTalent: MutableList<Int> = mutableListOf(),
+    private var triggerTalent: MutableList<Int> = mutableListOf(),
     var property: Property
 ) : Iterator<ExecutedEvent>, Sequence<ExecutedEvent> {
     constructor() : this(mutableListOf(), Property())
@@ -125,5 +126,9 @@ data class Life(
             events.first(),
             events.drop(1)
         )
+    }
+
+    companion object {
+        val Life.talents: List<Talent> get() = property.attribute.talents.map { Talent.data[it]!! }
     }
 }

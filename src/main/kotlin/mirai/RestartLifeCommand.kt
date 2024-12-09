@@ -2,6 +2,7 @@ package com.github.hatoyuze.restarter.mirai
 
 import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.game.LifeEngine
+import com.github.hatoyuze.restarter.game.entity.Life.Companion.talents
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.isNotUser
@@ -41,22 +42,26 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
             quote("最多只能选择3个天赋")
             return@command
         }
-        val talents = selected.map { selectList.getOrElse(it - 1) { selectList.random() } }
+        val objectTalents = selected.map { selectList.getOrElse(it - 1) { selectList.random() } }
 
+        var failed = false
         val engine = LifeEngine {
             appearance = (0..15).random()
             strength = (0..15).random()
             intelligent = (0..15).random()
             money = (0..15).random()
             spirit = (0..15).random()
+            try {
+                talents = objectTalents
+            } catch (e: IllegalArgumentException) {
+                failed = true
+            }
         }
-
-        try {
-            engine.talent = talents
-        } catch (e: IllegalArgumentException) {
+        if (failed) {
             quote("选择了相互冲突的天赋，已停止！")
             return@command
         }
+
 
         val lifeList = engine.toList()
         val initialProperty = lifeList[0].property
@@ -71,7 +76,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
                 message = PlainText(
                     """
 您拥有以下天赋：
-${engine.talent.joinToString("\n") { it.introduction }}
+${engine.life.talents.joinToString("\n") { it.introduction }}
 
 您的初始属性点如下：
 智慧：${initialProperty.intelligent}, 力量：${initialProperty.strength}, 外貌：${initialProperty.appearance}

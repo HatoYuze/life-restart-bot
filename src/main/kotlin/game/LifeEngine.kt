@@ -6,8 +6,7 @@ import com.github.hatoyuze.restarter.game.entity.Life
 import com.github.hatoyuze.restarter.game.entity.TalentManager
 
 class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
-    private val life = Life()
-    var talent: List<Talent>
+    internal val life = Life()
 
     init {
         val initial = LifeEngineBuilder().apply(builder)
@@ -17,7 +16,6 @@ class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
             } else it
         }
 
-        talent = talents
 
         val attr = Attribute(
             -1,
