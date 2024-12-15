@@ -28,5 +28,6 @@ class ExpressionTest {
 
         println(expression)
         println(buildOriginString(expression))
+        println(expression.chineseDescription())
     }
 }

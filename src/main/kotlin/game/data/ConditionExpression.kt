@@ -31,6 +31,21 @@ sealed class ConditionExpression {
             NoCondition -> "NoCondition"
         }
     }
+    fun chineseDescription(onlyOneLine: Boolean = false): String {
+        return when (this) {
+            is ComplexConditionExpression -> {
+                val separator = " ${operator!!.chineseDescription}${if (onlyOneLine) "" else "\n"}"
+                expressions.joinToString(separator) {
+                    it.chineseDescription()
+                }
+            }
+
+            NoCondition -> "无条件"
+            is SimpleConditionExpression -> {
+                "${member.chineseDesc} 需要 ${type.chineseDescription} ${if (range.size == 1) range.first() else range.toString()}"
+            }
+        }
+    }
 
     companion object {
         private fun nonZero(a: Int, b: Int, range: Int) = when {
@@ -91,9 +106,9 @@ sealed class ConditionExpression {
     }
 }
 
-enum class ConditionOperator(val symbol: String) {
-    OR("|"),
-    AND("&")
+enum class ConditionOperator(val symbol: String, val chineseDescription: String) {
+    OR("|", "或者"),
+    AND("&", "并且")
 }
 
 @Serializable
@@ -120,11 +135,11 @@ class SimpleConditionExpression(
     val range: List<Int>
 ) : ConditionExpression() {
     @Serializable
-    enum class Requirement(val expression: Char) {
-        GREATER('>'),
-        RANGE_CONTAINS('?'),
-        LESS('<'),
-        RANGE_EXCLUDES('!'),
+    enum class Requirement(val expression: Char, val chineseDescription: String) {
+        GREATER('>', "大于"),
+        RANGE_CONTAINS('?', "包含"),
+        LESS('<', "小于"),
+        RANGE_EXCLUDES('!', "不等于"),
         ;
 
         companion object {

@@ -1,22 +1,21 @@
 package com.github.hatoyuze.restarter.game.entity
 
-import com.github.hatoyuze.restarter.game.data.Talent
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class AttributeType {
-    AGE,  //年龄
-    CHR,  //颜值
-    INT,  //智力
-    STR,  //体质
-    MNY,  //家境
-    SPR,  //快乐
-    TLT,  //天赋
-    LIF,  //寿命
-    EVT,  //事件
-    RDM,  //随机
-    TMS,  //wtf??
-    AET,  //前一个事件
+enum class AttributeType(val chineseDesc: String) {
+    AGE("年龄"),  //年龄
+    CHR("颜值"),  //颜值
+    INT("智力"),  //智力
+    STR("体质"),  //体质
+    MNY("家境"),  //家境
+    SPR("快乐"),  //快乐
+    TLT("天赋"),  //天赋
+    LIF("寿命"),  //寿命
+    EVT("事件的 id"),  //事件
+    RDM("随机属性"),  //随机
+    TMS("TMS 属性"),  //wtf??
+    AET("上一个事件的 id"),  //前一个事件
 }
 
 
@@ -101,29 +100,6 @@ data class Attribute @JvmOverloads constructor(
     fun includeEvent(eventId: Int): Boolean = eventId in events
     fun includeTalent(talentId: Int): Boolean = talentId in talents
     fun isEnd(): Boolean = lifeAge <= 0
-
-    fun randomAttribute(): List<Int> {
-        val attributeList: MutableList<Int> = ArrayList()
-        var sum = 0
-        repeat(attributeDisplayTotal - 1) {
-            val randomData = (Math.random() * maxAttribute).toInt()
-            attributeList.add(randomData)
-            sum += randomData
-        }
-        val lastAttribute = attributeTotal + additionAttr - sum
-        attributeList.add(lastAttribute)
-        return attributeList
-    }
-
-    fun setAttribute(attrs: List<Int?>) {
-        appearance = attrs[0] ?: 0
-        intelligent = attrs[1] ?: 0
-        money = attrs[2] ?: 0
-    }
-
-    fun getTalentsDescription(talentHashMap: HashMap<Int?, Talent>): List<String> {
-        return talents.mapNotNull { talentId -> talentHashMap[talentId]?.description }
-    }
 
     val appearanceSummary: Judgement get() = when {
         appearance >= 11 -> Judgement(3, appearance, "逆天")
