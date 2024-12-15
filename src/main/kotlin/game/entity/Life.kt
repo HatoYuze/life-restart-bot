@@ -51,13 +51,15 @@ data class Life(
         val userEventList = ArrayList<UserEventToAge>()
         with(property.attribute) {
             AttributeType.EVT += userEventId
-            val userEvent = GlobalEventLibrary[userEventId]!!
+            val userEvent =
+                GlobalEventLibrary[userEventId] ?: throw NullPointerException("Unknown event id $userEventId")
+
             userEventList.add(UserEventToAge(userEvent, age))
             userEvent.applyEffect(this)
 
             userEvent.branch.let { branches ->
                 branches.forEach { (condition, refer) ->
-                    if (refer == -1) return@forEach
+                    if (refer == -1 || refer == 0) return@forEach
                     if (condition.judgeAll(this)) {
                         finishUserEvent(refer).forEach {
                             userEventList.add(it)
@@ -70,28 +72,28 @@ data class Life(
         return userEventList
     }
 
-
     private fun randomUserEvent(ageUserEvent: AgeSupportEvents): Int {
-        val ageUserEventHashMap = ageUserEvent.events
-        val ageUserEventCheckedHashMap = HashMap<Int, Double>()
-        ageUserEventHashMap.keys.forEach { key ->
-            if (checkUserEvent(key)) {
-                ageUserEventCheckedHashMap[key] =
-                    ageUserEventHashMap[key] ?: error("Unknown error, $ageUserEventHashMap excludes $key")
-            }
+        val events = ageUserEvent.events
+        val validEvents = events.filter { entry -> checkUserEvent(entry.key) }
+            .mapValues { entry -> entry.value }
+
+        if (validEvents.isEmpty()) {
+            // 没有可继续的事件，强制死亡
+            return 30003
         }
-        var totalWeight = 0.0
-        ageUserEventCheckedHashMap.keys.forEach { key ->
-            totalWeight += ageUserEventHashMap[key] ?: 0.0
-        }
-        var randomWeight = totalWeight * Math.random()
-        ageUserEventCheckedHashMap.keys.forEach { key ->
-            randomWeight -= ageUserEventHashMap[key] ?: 0.0
-            if (randomWeight <= 0) {
+
+        val totalWeight = validEvents.values.sum()
+        val randomCut = totalWeight * Math.random()
+
+        var cumulativeWeight = 0.0
+        for ((key, weight) in validEvents) {
+            cumulativeWeight += weight
+            if (randomCut <= cumulativeWeight) {
                 return key
             }
         }
-        return 0
+
+        return validEvents.keys.last()
     }
 
     private fun checkUserEvent(userEventId: Int): Boolean {

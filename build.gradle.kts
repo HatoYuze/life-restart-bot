@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.hatoyuze.restarter"
-version = "0.2.2"
+version = "0.2.3"
 
 repositories {
     if (System.getenv("CI")?.toBoolean() != true) {
@@ -18,4 +18,9 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+
+
+    // dataframe for Uploader
+    testImplementation("org.jetbrains.kotlinx:dataframe-core:0.15.0")
+    testImplementation("org.jetbrains.kotlinx:dataframe-excel:0.15.0")
 }

@@ -88,7 +88,10 @@ data class Attribute @JvmOverloads constructor(
                 }
             }
 
-            AttributeType.EVT -> if (value != -1 && !includeEvent(value)) events.add(value)
+            AttributeType.EVT -> {
+                if (value != -1 && !includeEvent(value)) events.add(value)
+                if (value == 10000) lifeAge = -1
+            }
             AttributeType.TLT -> if (value != -1 && !includeTalent(value)) talents.add(value)
             AttributeType.TMS -> tms+=value
             else -> println("Can not set $this to $value")

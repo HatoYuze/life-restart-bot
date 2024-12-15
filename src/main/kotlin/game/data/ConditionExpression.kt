@@ -33,14 +33,23 @@ sealed class ConditionExpression {
     }
 
     companion object {
+        private fun nonZero(a: Int, b: Int, range: Int) = when {
+            range == -1 -> a.takeIf { it != -1 } ?: b.takeIf { it != -1 } ?: -1
+            a != -1 && a < range -> a
+            b != -1 && b < range -> b
+            else -> -1
+        }
         fun parseExpression(expression0: String): ConditionExpression {
             if (expression0.isEmpty()) {
                 return NoCondition
             }
             val expression = expression0.replace(" ", "")
-            val index = findBalancedParentheses(expression)
-            val pairExpressionIndex = expression.indexOf('|')
-            val isDoubleExpression =  pairExpressionIndex != -1 && index == 0
+            val index = findBalancedParentheses(expression) // next right bracket index
+            if (index == -1) {
+                return parseExpression("$expression0)") // 主动对齐括号
+            }
+            val pairExpressionIndex = nonZero(expression.indexOf('|'), expression.indexOf('&'), expression.indexOf('('))
+            val isDoubleExpression = pairExpressionIndex != -1 && index == 0
 
             if (index <= 0 && !isDoubleExpression) {
                 // 没有括号，直接解析为简单表达式

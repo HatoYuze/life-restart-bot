@@ -18,23 +18,20 @@ class TestGame {
     @Test
     fun data() {
         ResourceManager.isTesting = true
-        println("load event:")
         var used = measureTime {
             UserEvent.data
         }
-        println("Done. used $used")
+        println("Loaded event data used $used")
 
-        println("load ages:")
         used = measureTime {
             AgeSupportEvents.data
         }
-        println("Done. used $used")
+        println("Loaded age data used $used")
 
-        println("load talent:")
         used = measureTime {
             Talent.data
         }
-        println("Done. used $used")
+        println("Loaded talent data used $used")
     }
 
     @Test
@@ -53,6 +50,23 @@ class TestGame {
     }
 
     @Test
+    fun untilError() {
+        val count = 50
+        data()
+        for (i in 0..count) {
+            val engine = LifeEngine {
+                appearance = (0..15).random()
+                strength = (0..15).random()
+                intelligent = (0..15).random()
+                money = (0..15).random()
+                spirit = (0..15).random()
+                this.talents = LifeEngine.randomTalent()
+            }
+            engine.toList()
+        }
+    }
+
+    @Test
     fun game() {
         val selectList = LifeEngine.randomTalent()
         println("请在抽取的随机天赋中共选择3个：")
@@ -67,7 +81,7 @@ class TestGame {
             val selected = input.split(",").mapNotNull { it.toIntOrNull() }.toSet()
 
             val talents =
-                selected.map { selectList.getOrElse(it - 1) { selectList.random() } }.plus(Talent.data[1004]!!)
+                selected.map { selectList.getOrElse(it - 1) { selectList.random() } }.plus(Talent.data[1048]!!)
 
             val engine = LifeEngine {
                 appearance = (0..15).random()
