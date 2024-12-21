@@ -3,6 +3,7 @@
 package com.github.hatoyuze.restarter.mirai
 
 import com.github.hatoyuze.restarter.PluginMain
+import com.github.hatoyuze.restarter.draw.GameLayoutDrawer
 import com.github.hatoyuze.restarter.game.LifeEngine
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
@@ -15,6 +16,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -38,7 +40,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         if (!PluginMain.hasCustomPermission(sender.user)) {
             return@command
         }
-        val objectTalents = getTalents() ?: return@command
+        val objectTalents = getTalents(enableImage = true) ?: return@command
 
         val statusChange = objectTalents.map { it.status }
         val distribute = distributeValues(
@@ -201,16 +203,23 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
     }
 
 
-    private suspend fun CommandContext.getTalents(): List<Talent>? {
+    private suspend fun CommandContext.getTalents(enableImage: Boolean = false): List<Talent>? {
         val selectList = LifeEngine.randomTalent()
-        quote(buildMessageChain {
-            appendLine("请在抽取的随机天赋中共选择3个：")
-            appendLine(" >直接输入对应的序号即可，数字间由英文逗号相隔(如: 1,2,3)")
-            selectList.forEachIndexed { id, talent ->
-                appendLine("${id + 1}：${talent.name}")
-                appendLine("   ${talent.description}")
+        if (enableImage) {
+            val image = GameLayoutDrawer.createTalentOptionImage(selectList).toExternalResource().use {
+                subject.uploadImage(it)
             }
-        })
+            quote(image)
+        } else {
+            quote(buildMessageChain {
+                appendLine("请在抽取的随机天赋中共选择3个：")
+                appendLine(" >直接输入对应的序号即可，数字间由英文逗号相隔(如: 1,2,3)")
+                selectList.forEachIndexed { id, talent ->
+                    appendLine("${id + 1}：${talent.name}")
+                    appendLine("   ${talent.description}")
+                }
+            })
+        }
 
         val nextMessage = nextMessageMemberOrNull(60_000L) { true }?.content ?: run {
             quote("已超时！自动停止任务！")

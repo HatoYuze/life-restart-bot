@@ -51,19 +51,26 @@ class TestGame {
 
     @Test
     fun untilError() {
-        val count = 50
-        data()
-        for (i in 0..count) {
-            val engine = LifeEngine {
-                appearance = (0..15).random()
-                strength = (0..15).random()
-                intelligent = (0..15).random()
-                money = (0..15).random()
-                spirit = (0..15).random()
-                this.talents = LifeEngine.randomTalent()
+        val error = kotlin.runCatching {
+            val count = 50
+            data()
+            for (i in 0..count) {
+                val engine = LifeEngine {
+                    appearance = (0..15).random()
+                    strength = (0..15).random()
+                    intelligent = (0..15).random()
+                    money = (0..15).random()
+                    spirit = (0..15).random()
+                    this.talents = LifeEngine.randomTalent()
+                }
+                engine.toList()
             }
-            engine.toList()
+        }.exceptionOrNull()
+
+        if (error != null) {
+            require(error.message == "选择了互相排斥的天赋！" || error is StackOverflowError)
         }
+
     }
 
     @Test

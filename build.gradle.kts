@@ -17,8 +17,18 @@ repositories {
 }
 
 dependencies {
+    // skia runtime library will be added when run program
+    compileOnly("org.jetbrains.skiko:skiko-awt:0.8.18")
+}
+
+dependencies {
     testImplementation(kotlin("test"))
 
+
+    // test for drawing function
+    testImplementation("org.jetbrains.skiko:skiko-awt-runtime-macos-x64:0.7.67")
+    testImplementation("org.jetbrains.skiko:skiko-awt-runtime-linux-x64:0.7.67")
+    testImplementation("org.jetbrains.skiko:skiko-awt-runtime-windows-x64:0.7.67")
 
     // dataframe for Uploader
     testImplementation("org.jetbrains.kotlinx:dataframe-core:0.15.0")
