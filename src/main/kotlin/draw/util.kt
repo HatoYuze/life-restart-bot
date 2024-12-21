@@ -1,8 +1,6 @@
 package com.github.hatoyuze.restarter.draw
 
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Paint
-import org.jetbrains.skia.Surface
+import org.jetbrains.skia.*
 import java.io.File
 
 
@@ -23,4 +21,31 @@ suspend fun createImage(output: File, width: Int, height: Int, block: suspend Su
     surface.close()
 
     return output
+}
+
+/**
+ * the color of [initFont] will be changed to [backgroundColor4f]
+ * */
+fun Canvas.drawRRectWithEdge(
+    backgroundColor4f: Color4f,
+    edgeColor4f: Color4f = Color4f(0xFF_FF_FF_FF.toInt()),
+    rRect: RRect,
+    initFont: Paint = Paint {
+        color4f = edgeColor4f
+        isAntiAlias = true
+    }
+) {
+
+
+    val edgePaint = initFont.apply {
+        strokeWidth = 4f
+        mode = PaintMode.STROKE
+    }
+    drawRRect(rRect, edgePaint)
+
+    val backgroundPaint = initFont.apply {
+        color4f = backgroundColor4f
+        mode = PaintMode.FILL
+    }
+    drawRRect(rRect, backgroundPaint)
 }

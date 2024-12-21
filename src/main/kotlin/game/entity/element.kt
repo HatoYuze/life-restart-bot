@@ -21,4 +21,9 @@ data class ExecutedEvent(
         }
         deleteAt(lastIndex)
     }
+
+    companion object {
+        private fun UserEvent.lineCount() = eventName.split('\n').size
+        fun ExecutedEvent.linesCount() = mainEvent.lineCount() + subEvents.sumOf { sub -> sub.lineCount() }
+    }
 }

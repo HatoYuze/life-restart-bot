@@ -93,19 +93,11 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
                             """.trimIndent()
                 )
             )
-            for ((base, i) in lifeList.chunked(20).withIndex()) {
-                add(
-                    sender = commandContext.sender.user!!,
-                    message = PlainText(
-                        buildString {
-                            for ((offset, event) in i.withIndex()) {
-                                val age = (base * 20) + offset
-                                appendLine("${age}岁：${event.name}")
-                            }
-                        }
-                    )
-                )
+
+            val image = GameLayoutDrawer.createGamingImage(engine.life).toExternalResource().use {
+                subject.uploadImage(it)
             }
+            add(sender = commandContext.sender.user!!, message = image)
             add(
                 sender = commandContext.sender.user!!, message = PlainText("以上为模拟结果。以下为结算：")
             )

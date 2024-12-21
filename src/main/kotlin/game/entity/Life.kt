@@ -58,11 +58,14 @@ data class Life(
             userEvent.applyEffect(this)
 
             userEvent.branch.let { branches ->
-                branches.forEach { (condition, refer) ->
-                    if (refer == -1 || refer == 0) return@forEach
+                branches.forEach branch@{ (condition, refer) ->
+                    if (refer == -1 || refer == 0) return@branch
                     if (condition.judgeAll(this)) {
                         finishUserEvent(refer).forEach {
                             userEventList.add(it)
+                            if (it.first.id == DEAD_EVENT_ID) {
+                                return@branch
+                            }
                         }
                     }
                 }
@@ -132,5 +135,6 @@ data class Life(
 
     companion object {
         val Life.talents: List<Talent> get() = property.attribute.talents.map { Talent.data[it]!! }
+        private const val DEAD_EVENT_ID = 10000
     }
 }

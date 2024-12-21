@@ -2,10 +2,12 @@ package com.github.hatoyuze.restarter.draw
 
 import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.game.data.Talent
+import com.github.hatoyuze.restarter.game.entity.Life
 import com.github.hatoyuze.restarter.mirai.ResourceManager
 import com.github.hatoyuze.restarter.mirai.ResourceManager.newCacheFile
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import org.jetbrains.skia.Data
+import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Font
 import org.jetbrains.skia.FontMgr
 import java.io.File
@@ -15,6 +17,15 @@ object GameLayoutDrawer {
     suspend fun createTalentOptionImage(talents: List<Talent>): File {
         return createImage(newCacheFile("talents-${talents.hashCode()}.png"), width = 985, height = 1034) {
             TalentLayoutDrawer(this, font, talents).draw()
+        }
+    }
+
+    fun createGamingImage(life: Life): File {
+        val surface = GameProgressLayoutDrawer(font, life).draw()
+        return newCacheFile("life-${life.hashCode()}.png").also {
+            it.writeBytes(
+                surface.makeImageSnapshot().encodeToData(EncodedImageFormat.PNG)?.bytes ?: byteArrayOf(0)
+            )
         }
     }
 
@@ -34,6 +45,8 @@ object GameLayoutDrawer {
             ) ?: error("Font data is not recognized")
         )
     }
+
+    val fontChineseLetterWidth = font.apply { size = 24f }.measureTextWidth("我")
 
     const val BACKGROUND_COLOR_4F = 0xFF_222831.toInt()
 

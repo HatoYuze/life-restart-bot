@@ -88,17 +88,10 @@ class TalentLayoutDrawer(
             isAntiAlias = true
         }
 
-        val edgePaint = initFont.apply {
-            strokeWidth = 4f
-            mode = PaintMode.STROKE
-        }
-        canvas.drawRRect(range, edgePaint)
-
-        val backgroundPaint = initFont.apply {
-            color4f = Color4f(talentsGradeColor4F[talent.grade])
-            mode = PaintMode.FILL
-        }
-        canvas.drawRRect(range, backgroundPaint)
+        canvas.drawRRectWithEdge(
+            backgroundColor4f = Color4f(talentsGradeColor4F[talent.grade]),
+            rRect = range
+        )
 
         val font = font.apply {
             size = 24f
