@@ -23,6 +23,14 @@ suspend fun createImage(output: File, width: Int, height: Int, block: suspend Su
     return output
 }
 
+
+fun Surface.drawStringCentral(content: String, font: Font, y: Float, paint: Paint): Rect {
+    val measure = font.measureText(content)
+    val textX = (width - (measure.right - measure.left)) / 2
+    canvas.drawString(content, textX, y, font, paint)
+    return measure
+}
+
 /**
  * the color of [initFont] will be changed to [backgroundColor4f]
  * */

@@ -7,13 +7,14 @@ import org.jetbrains.skia.*
 class TalentLayoutDrawer(
     private val surface: Surface,
     private val font: Font,
-    val talents: List<Talent>
+    val talents: List<Talent>,
+    surfaceRange: Point = Point(surface.width.toFloat(), surface.height.toFloat())
 ) {
     private val canvas = surface.canvas
-    private val boxWidth = (surface.width * BOX_WIDTH_RADIO).toFloat()
-    private val boxHeight = (surface.height * BOX_HEIGHT_RADIO).toFloat()
+    private val boxWidth = (surfaceRange.x * BOX_WIDTH_RADIO).toFloat()
+    internal val boxHeight = (surfaceRange.y * BOX_HEIGHT_RADIO).toFloat()
 
-    private val boxPositionX = (surface.width - boxWidth) / 2.0f
+    private val boxPositionX = (surfaceRange.x - boxWidth) / 2.0f
 
     fun draw() {
         fillBackground()
@@ -36,28 +37,21 @@ class TalentLayoutDrawer(
     }
 
     private fun drawTitle() {
-        fun Canvas.drawStringCentral(content: String, font: Font, y: Float, paint: Paint): Rect {
-            val measure = font.measureText(content)
-            val textX = (surface.width - (measure.right - measure.left)) / 2
-            drawString(content, textX, y, font, paint)
-            return measure
-        }
-
         val paint = Paint {
             color = Color.WHITE
             isAntiAlias = true
         }
         val font = font.also { it.size = 40f }
-        canvas.drawStringCentral("天赋抽卡", font, 75f, paint)
+        surface.drawStringCentral("天赋抽卡", font, 75f, paint)
 
         font.size = 25f
-        val height = canvas.drawStringCentral(
+        val height = surface.drawStringCentral(
             "请在抽取的随机天赋中共选择3个",
             font,
             surface.height.toFloat() - 150f,
             paint
         ).height
-        canvas.drawStringCentral(
+        surface.drawStringCentral(
             "输入对应的序号选择，数字间由逗号相隔(如: 1,2,3)",
             font,
             surface.height.toFloat() - 165f - height,
@@ -65,7 +59,7 @@ class TalentLayoutDrawer(
         )
     }
 
-    private fun drawBox(y: Float, talent: Talent, id: Int) {
+    fun drawBox(y: Float, talent: Talent, id: Int = -1) {
         val textBaseline = y + boxHeight - 15f
         fun drawStringFittedBoxCentral(font0: Font, content: String, paint: Paint) {
             var fontSize = 24.0f
@@ -100,7 +94,9 @@ class TalentLayoutDrawer(
         val textPaint = initFont.apply {
             color = Color.WHITE
         }
-        canvas.drawString("#$id ", boxPositionX + 5f, textBaseline, font, textPaint)
+        if (id != -1) {
+            canvas.drawString("#$id ", boxPositionX + 5f, textBaseline, font, textPaint)
+        }
 
         drawStringFittedBoxCentral(font, "${talent.name}(${talent.description})", textPaint)
     }

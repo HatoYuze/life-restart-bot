@@ -4,43 +4,34 @@ import com.github.hatoyuze.restarter.game.entity.ExecutedEvent
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.linesCount
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.maxGrade
 import com.github.hatoyuze.restarter.game.entity.Life
+import com.github.hatoyuze.restarter.game.entity.Life.Companion.talents
 import org.jetbrains.skia.*
 import org.jetbrains.skia.RRect.Companion.makeXYWH
 
 class GameProgressLayoutDrawer(
     private val font: Font,
-    life0: Life
+    val life0: Life
 ) {
-    private val life = life0.toList().map { it.warpString() }
-    private val textLineHeight by lazy {
-        font.also {
-            it.size = 24f
-            it.edging = FontEdging.ANTI_ALIAS
-        }.measureText("你出生了。").let { it.bottom - it.top }
-    }
-    private val textWeight =
-        font.also {
-            it.size = 24f
-            it.edging = FontEdging.ANTI_ALIAS
-        }.measureTextWidth("第 500 岁")
 
+    private val textLineHeight by lazy { fontWithInit().measureText("你出生了。").let { it.bottom - it.top } }
+    private val textWeight = fontWithInit().measureTextWidth("第 500 岁")
     private val surface by lazy {
-        fun getLifeLines(): Int {
-            return life.sumOf { it.linesCount() }
-        }
+        fun getLifeLines(): Int = life.sumOf { it.linesCount() }
         Surface.makeRasterN32Premul(
             1000,
             (getLifeLines() * (textLineHeight + 10) + life.size * 35 + INIT_EVENT_MESSAGE_Y + 50).toInt()
         )
     }
+
+    private val life = life0.toList().map { it.warpString() }
     private val canvas = surface.canvas
-    val paint = Paint {
-        color = Color.WHITE
-        isAntiAlias = true
-    }
     private var lastY = INIT_EVENT_MESSAGE_Y
 
 
+    private val paint = Paint {
+        color = Color.WHITE
+        isAntiAlias = true
+    }
     private fun drawBackground() {
         val paint = Paint {
             color4f = Color4f(BACKGROUND_COLOR4F)
@@ -61,9 +52,38 @@ class GameProgressLayoutDrawer(
         )
     }
 
+    private fun drawTitle() {
+        val font = font.also { it.size = 40f }
+        //85
+        surface.drawStringCentral("人生模拟器", font, 75f, paint)
+        paint.strokeWidth = 5f
+        paint.mode = PaintMode.FILL
+
+        canvas.drawLine(50f, 75f + 15f, 1000f - 50f, 75f + 15f, paint)
+        paint.strokeWidth = 0f
+        font.size = FONT_DEFAULT_SIZE
+    }
+
+    private fun drawSelectedTalent() {
+        val drawer = TalentLayoutDrawer(
+            surface, font, life0.talents, surfaceRange = Point(1000f, 1034f)
+        )
+        var y = 80f
+
+        val font = font.also { it.size = 30f }
+        surface.drawStringCentral("天赋列表", font, 130f, paint)
+
+        life0.talents.onEach { talent ->
+            y += drawer.boxHeight + 20
+            drawer.drawBox(y, talent, -1)
+        }
+        font.size = FONT_DEFAULT_SIZE
+    }
 
     fun draw(): Surface {
         drawBackground()
+        drawTitle()
+        drawSelectedTalent()
 
         lastY += 10f
         for ((index, event) in life.withIndex()) {
@@ -108,12 +128,18 @@ class GameProgressLayoutDrawer(
     }
 
 
+    private fun fontWithInit(): Font =
+        font.also {
+            it.size = FONT_DEFAULT_SIZE
+            it.edging = FontEdging.ANTI_ALIAS
+        }
+
     companion object {
-        const val INIT_EVENT_MESSAGE_Y = 35f
+        const val INIT_EVENT_MESSAGE_Y = 350f
         const val MESSAGE_START_X = 40f
         const val EVENT_BACKGROUND_COLOR4F = 0xFF_383D45.toInt()
         const val BACKGROUND_COLOR4F = 0xFF_222831.toInt()
-
+        private const val FONT_DEFAULT_SIZE = 24f
 
         private val maxLetterCountOneLine = (800 / GameLayoutDrawer.fontChineseLetterWidth).toInt()
         private fun String.wrapString(): String {
