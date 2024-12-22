@@ -2,6 +2,7 @@ package com.github.hatoyuze.restarter.draw
 
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.linesCount
+import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.maxGrade
 import com.github.hatoyuze.restarter.game.entity.Life
 import org.jetbrains.skia.*
 import org.jetbrains.skia.RRect.Companion.makeXYWH
@@ -53,7 +54,7 @@ class GameProgressLayoutDrawer(
             rRect = makeXYWH(
                 30f,
                 INIT_EVENT_MESSAGE_Y,
-                surface.width - 2 * MESSAGE_START_X,
+                surface.width - 1.5f * MESSAGE_START_X,
                 surface.height - INIT_EVENT_MESSAGE_Y - 50f,
                 15f
             )
@@ -66,7 +67,7 @@ class GameProgressLayoutDrawer(
 
         lastY += 10f
         for ((index, event) in life.withIndex()) {
-            drawNextEntry(index + 1, event)
+            drawNextEntry(index, event)
         }
 
         return surface
@@ -79,7 +80,7 @@ class GameProgressLayoutDrawer(
         fun drawEventLine(eventName: String, isAppendLine: Boolean = true) {
             var isFirst = true
             eventName.split('\n').onEach {
-                if (isAppendLine && isFirst)
+                if (isAppendLine || !isFirst)
                     lastY += textLineHeight + 10
                 canvas.drawString(it, messageLineStartX, lastY, font, paint)
                 isFirst = false
@@ -90,8 +91,8 @@ class GameProgressLayoutDrawer(
 
         // Message background
         canvas.drawRRectWithEdge(
-            backgroundColor4f = Color4f(eventGradeColor4F[currentEvent.mainEvent.grade]),
-            rRect = makeXYWH(30f, lastY, surface.width - 2 * MESSAGE_START_X, heightRange + 15, 3f),
+            backgroundColor4f = Color4f(eventGradeColor4F[currentEvent.maxGrade()]),
+            rRect = makeXYWH(30f, lastY, surface.width - 1.5f * MESSAGE_START_X, heightRange + 15, 3f),
             initFont = paint
         )
         paint.color4f = Color4f(Color.WHITE)
@@ -109,12 +110,12 @@ class GameProgressLayoutDrawer(
 
     companion object {
         const val INIT_EVENT_MESSAGE_Y = 35f
-        const val MESSAGE_START_X = 50f
+        const val MESSAGE_START_X = 40f
         const val EVENT_BACKGROUND_COLOR4F = 0xFF_383D45.toInt()
         const val BACKGROUND_COLOR4F = 0xFF_222831.toInt()
 
 
-        private val maxLetterCountOneLine = (850 / GameLayoutDrawer.fontChineseLetterWidth).toInt()
+        private val maxLetterCountOneLine = (800 / GameLayoutDrawer.fontChineseLetterWidth).toInt()
         private fun String.wrapString(): String {
             if (length <= maxLetterCountOneLine) return this
             val sb = StringBuilder(length + (length / maxLetterCountOneLine))

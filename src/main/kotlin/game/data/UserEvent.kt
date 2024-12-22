@@ -47,5 +47,16 @@ data class UserEvent @JvmOverloads constructor(
             }
             json.decodeFromString<Map<String, UserEvent>>(jsonContent).mapKeys { it.key.toInt() }.toMutableMap()
         }
+
+        fun Talent.ofEvent(): UserEvent {
+            return UserEvent(
+                id = id + TALENT_EVENT_CODE,
+                eventName = "天赋【${name}】发动: $description",
+                noRandom = true,
+                effect = effect
+            )
+        }
+
+        private const val TALENT_EVENT_CODE = 100000
     }
 }

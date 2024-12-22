@@ -34,12 +34,13 @@ class Drawer {
         life.restartLife(
             Attribute(
                 -1,
-                (0..15).random(),
-                (0..15).random(),
-                (0..15).random(),
-                (0..15).random(),
-                (0..15).random(),
+                (5..15).random(),
+                (5..15).random(),
+                (5..15).random(),
+                (5..15).random(),
+                (5..15).random(),
                 1,
+                talents = mutableListOf(1049, 1050, 1057)
             )
 
         )

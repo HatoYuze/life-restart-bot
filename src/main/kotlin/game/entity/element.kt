@@ -1,10 +1,9 @@
 package com.github.hatoyuze.restarter.game.entity
 
 import com.github.hatoyuze.restarter.game.data.UserEvent
+import kotlin.math.max
 
 data class Judgement(val grade: Int, val value: Int, val judge: String) {
-    val evaluate: String
-        get() = "$value $judge"
 }
 
 
@@ -22,8 +21,10 @@ data class ExecutedEvent(
         deleteAt(lastIndex)
     }
 
+
     companion object {
         private fun UserEvent.lineCount() = eventName.split('\n').size
         fun ExecutedEvent.linesCount() = mainEvent.lineCount() + subEvents.sumOf { sub -> sub.lineCount() }
+        fun ExecutedEvent.maxGrade() = max(mainEvent.grade, subEvents.maxOfOrNull { it.grade } ?: 0)
     }
 }

@@ -3,10 +3,9 @@ package com.github.hatoyuze.restarter.game.entity
 import com.github.hatoyuze.restarter.game.data.AgeSupportEvents
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
+import com.github.hatoyuze.restarter.game.data.UserEvent.Companion.ofEvent
 import kotlinx.serialization.Serializable
 import com.github.hatoyuze.restarter.game.data.UserEvent.Companion.data as GlobalEventLibrary
-
-typealias UserEventToAge = Pair<UserEvent, Int>
 
 @Serializable
 data class Life(
@@ -21,25 +20,35 @@ data class Life(
         doTalent()
     }
 
-    fun doTalent() {
+    /**
+     * @return 成功执行的天赋
+     * */
+    private fun doTalent(): List<Talent> {
+        val resultTalents = mutableListOf<Talent>()
         val talentsList = getUnfinishedTalent()
         talentsList.forEach { value ->
             val talent = TalentManager.talentTakeEffect(value, property.attribute) ?: return@forEach
+            resultTalents.add(talent)
             talent.let {
                 triggerTalent.add(value)
                 property.takeEffect(it)
             }
         }
+        return resultTalents
     }
 
-    fun nextEvents(): List<UserEventToAge> {
+    private fun nextEvents(): List<UserEvent> {
         with(property.attribute) {
             AttributeType.AGE += 1
         }
-        doTalent()
         val ageUserEvent = property.getAgeData()
         val userEventId = randomUserEvent(ageUserEvent)
-        return finishUserEvent(userEventId)
+        val finishedEvents = finishUserEvent(userEventId)
+
+        val talentsEvent = doTalent().map { it.ofEvent() }
+        finishedEvents.addAll(0, talentsEvent)
+
+        return finishedEvents
     }
 
     val age: Int
@@ -47,14 +56,14 @@ data class Life(
             return property.attribute.age
         }
 
-    private fun finishUserEvent(userEventId: Int): List<UserEventToAge> {
-        val userEventList = ArrayList<UserEventToAge>()
+    private fun finishUserEvent(userEventId: Int): MutableList<UserEvent> {
+        val userEventList = ArrayList<UserEvent>()
         with(property.attribute) {
             AttributeType.EVT += userEventId
             val userEvent =
                 GlobalEventLibrary[userEventId] ?: throw NullPointerException("Unknown event id $userEventId")
 
-            userEventList.add(UserEventToAge(userEvent, age))
+            userEventList.add(userEvent)
             userEvent.applyEffect(this)
 
             userEvent.branch.let { branches ->
@@ -63,7 +72,7 @@ data class Life(
                     if (condition.judgeAll(this)) {
                         finishUserEvent(refer).forEach {
                             userEventList.add(it)
-                            if (it.first.id == DEAD_EVENT_ID) {
+                            if (it.id == DEAD_EVENT_ID) {
                                 return@branch
                             }
                         }
@@ -113,7 +122,7 @@ data class Life(
         return talentsList.filter { !triggerTalent.contains(it) }
     }
 
-    fun isLifeEnd(): Boolean {
+    private fun isLifeEnd(): Boolean {
         return property.attribute.isEnd()
     }
 
@@ -126,7 +135,7 @@ data class Life(
     }
 
     override fun next(): ExecutedEvent {
-        val events = nextEvents().map { it.first }
+        val events = nextEvents()
         return ExecutedEvent(
             events.first(),
             events.drop(1)
