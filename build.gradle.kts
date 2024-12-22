@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.hatoyuze.restarter"
-version = "0.3.0"
+version = "0.4.0"
 
 repositories {
     if (System.getenv("CI")?.toBoolean() != true) {
@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     // skia runtime library will be added when run program
-    compileOnly("org.jetbrains.skiko:skiko-awt:0.8.18")
+    implementation("org.jetbrains.skiko:skiko-awt:0.8.18")
 }
 
 dependencies {

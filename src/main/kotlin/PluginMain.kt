@@ -2,6 +2,7 @@ package com.github.hatoyuze.restarter
 
 import com.github.hatoyuze.restarter.mirai.RestartLifeCommand
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.ifNull
 import com.github.hatoyuze.restarter.mirai.config.RegisterEventConfig
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.extension.PluginComponentStorage
@@ -13,9 +14,8 @@ import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.utils.info
-import org.jetbrains.skiko.Version
-import org.jetbrains.skiko.hostId
 import java.io.File
+import kotlin.io.path.pathString
 
 
 object PluginMain : KotlinPlugin(
@@ -33,9 +33,23 @@ object PluginMain : KotlinPlugin(
     // runtime dependency
     override fun PluginComponentStorage.onLoad() {
         with(jvmPluginClasspath) {
+            val osName = System.getProperty("os.name")
+            val targetOs = when {
+                osName == "Mac OS X" -> "macos"
+                osName.startsWith("Win") -> "windows"
+                osName.startsWith("Linux") -> "linux"
+                else -> error("Unsupported OS: $osName")
+            }
+            val osArch = System.getProperty("os.arch")
+            val targetArch = when (osArch) {
+                "x86_64", "amd64" -> "x64"
+                "aarch64" -> "arm64"
+                else -> error("Unsupported arch: $osArch")
+            }
+
             downloadAndAddToPath(
                 classLoader = pluginIndependentLibrariesClassLoader,
-                dependencies = listOf("org.jetbrains.skiko:skiko-awt-runtime-${hostId}:${Version.skiko}")
+                dependencies = listOf("org.jetbrains.skiko:skiko-awt-runtime-${targetOs}-$targetArch:0.8.18")
             )
         }
     }
@@ -45,8 +59,8 @@ object PluginMain : KotlinPlugin(
         CommandManager.INSTANCE.registerCommand(
             RestartLifeCommand
         )
-        GameConfig.reload()
         RegisterEventConfig.reload()
+        GameConfig.reload()
         RegisterEventConfig.handleEvent()
 
         commandPermission
@@ -59,7 +73,7 @@ object PluginMain : KotlinPlugin(
 
     override fun onDisable() {
         var i = 0
-        File(GameConfig.cachePath).listFiles()?.onEach {
+        File(GameConfig.cachePath.ifNull(PluginMain.dataFolderPath.pathString)).listFiles()?.onEach {
             it.delete()
             i++
         } ?: error("缓存目录并不是有效的文件夹")

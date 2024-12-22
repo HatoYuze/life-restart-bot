@@ -103,7 +103,7 @@ class GameProgressLayoutDrawer(
         font.size = 18f
 
         lateinit var defaultFont: Font
-        if (GameLayoutDrawer.enableSegoeEmoji) {
+        if (!GameLayoutDrawer.enableSegoeEmoji) {
             defaultFont = this.font
             defaultFont.size = 18f
         }

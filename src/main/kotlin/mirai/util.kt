@@ -3,6 +3,7 @@ package com.github.hatoyuze.restarter.mirai
 
 import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.ifNull
 import kotlinx.coroutines.withTimeoutOrNull
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.plugin.ResourceContainer
@@ -15,6 +16,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import java.io.File
 import java.io.InputStream
+import kotlin.io.path.pathString
 
 object ResourceManager : ResourceContainer {
     internal var isTesting = false
@@ -31,7 +33,8 @@ object ResourceManager : ResourceContainer {
 
     fun newCacheFile(name: String): File {
         val cacheFile =
-            if (isTesting) System.getProperty("java.io.tmpdir") else GameConfig.cachePath
+            if (isTesting) System.getProperty("java.io.tmpdir")
+            else GameConfig.cachePath.ifNull(PluginMain.dataFolderPath.pathString)
 
         val dirFile = File(cacheFile)
         if (!dirFile.exists()) {

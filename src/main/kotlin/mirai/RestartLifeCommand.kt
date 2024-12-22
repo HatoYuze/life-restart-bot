@@ -8,7 +8,7 @@ import com.github.hatoyuze.restarter.game.LifeEngine
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
 import com.github.hatoyuze.restarter.game.entity.Life.Companion.talents
-import com.github.hatoyuze.restarter.mirai.config.GameConfig.maxAttributePoint
+import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.isNotUser
@@ -36,11 +36,87 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         initialMoney: Int = 0,
         @Name("初始快乐值")
         initialSpirit: Int = 0
+    ) = commandContext.run {
+        commandContext.run command@{
+            if (!PluginMain.hasCustomPermission(sender.user)) {
+                return@command
+            }
+            val objectTalents = getTalents(true) ?: return@command
+
+            val statusChange = objectTalents.map { it.status }
+            val distribute = distributeValues(
+                listOf(
+                    initialAppearance,
+                    initialStrength,
+                    initialIntelligent,
+                    initialMoney,
+                    initialSpirit
+                ), statusChange.sum()
+            )
+
+            var failed = false
+            val engine = LifeEngine {
+                appearance = distribute[0]
+                strength = distribute[1]
+                intelligent = distribute[2]
+                money = distribute[3]
+                spirit = distribute[4]
+                try {
+                    talents = objectTalents
+                } catch (e: IllegalArgumentException) {
+                    failed = true
+                }
+            }
+            if (failed) {
+                quote("选择了相互冲突的天赋，已停止！")
+                return@command
+            }
+
+
+            if (sender.isNotUser()) {
+                val lifeList = engine.toList()
+                println(lifeList.joinToString { "${it.property.lifeAge}岁: ${it.name}" })
+                return@command
+            }
+            val image = GameLayoutDrawer.createGamingImage(engine.life).toExternalResource().use {
+                subject.uploadImage(it)
+            }
+            quote(buildMessageChain {
+                +image
+                +buildString {
+                    appendLine("游戏结算：")
+                    with(engine.ratingStatus) {
+                        appendLine("颜值：${appearance.value} ${appearance.judge}")
+                        appendLine("家境：${money.value} ${money.judge}")
+                        appendLine("乐观：${spirit.value} ${spirit.judge}")
+                        appendLine("智力：${intelligent.value} ${intelligent.judge}")
+                        appendLine("力量：${strength.value} ${strength.judge}")
+                        appendLine("总分：${sum.value} ${sum.judge}")
+                    }
+                }
+            })
+        }
+    }
+
+    @Description("开始一场新的人生（文字版）")
+    @SubCommand
+    suspend fun text(
+        commandContext: CommandContext,
+        @Name("初始颜值值")
+        initialAppearance: Int = 0,
+        @Name("初始体质值")
+        initialStrength: Int = 0,
+        @Name("初始智力值")
+        initialIntelligent: Int = 0,
+        @Name("初始家境值")
+        initialMoney: Int = 0,
+        @Name("初始快乐值")
+        initialSpirit: Int = 0
     ) = commandContext.run command@{
         if (!PluginMain.hasCustomPermission(sender.user)) {
             return@command
         }
-        val objectTalents = getTalents(enableImage = true) ?: return@command
+        val objectTalents = getTalents() ?: return@command
 
         val statusChange = objectTalents.map { it.status }
         val distribute = distributeValues(
@@ -93,11 +169,19 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
                             """.trimIndent()
                 )
             )
-
-            val image = GameLayoutDrawer.createGamingImage(engine.life).toExternalResource().use {
-                subject.uploadImage(it)
+            for ((base, i) in lifeList.chunked(20).withIndex()) {
+                add(
+                    sender = commandContext.sender.user!!,
+                    message = PlainText(
+                        buildString {
+                            for ((offset, event) in i.withIndex()) {
+                                val age = (base * 20) + offset
+                                appendLine("${age}岁：${event.name}")
+                            }
+                        }
+                    )
+                )
             }
-            add(sender = commandContext.sender.user!!, message = image)
             add(
                 sender = commandContext.sender.user!!, message = PlainText("以上为模拟结果。以下为结算：")
             )
@@ -235,7 +319,7 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
 
     private fun distributeValues(values: List<Int>, pointChange: Int = 0): List<Int> {
         val totalSum = values.sum()
-        val maxAttributePoint = maxAttributePoint + pointChange
+        val maxAttributePoint = GameConfig.maxAttributePoint + pointChange
 
         return when {
             totalSum > maxAttributePoint -> {
@@ -245,6 +329,17 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
                 if (newSum == maxAttributePoint) return new
                 new[new.lastIndex] += (maxAttributePoint - newSum)
                 new
+            }
+
+            totalSum < 10 -> {
+                distributeValues(
+                    listOf(
+                        (0..15).random(),
+                        (0..15).random(),
+                        (0..15).random(),
+                        (0..15).random(),
+                        (0..15).random()
+                    ))
             }
 
             totalSum < maxAttributePoint -> {
@@ -261,6 +356,7 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
                         valuesCopy[index] = remainingSum
                         break
                     }
+                    if (remainingSum == 0) break
                     val replaceValue = Random.nextInt(1, remainingSum + 1)
                     remainingSum -= replaceValue
                     valuesCopy[index] = replaceValue

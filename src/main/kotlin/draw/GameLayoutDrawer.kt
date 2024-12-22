@@ -5,7 +5,7 @@ import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.entity.Life
 import com.github.hatoyuze.restarter.mirai.ResourceManager
 import com.github.hatoyuze.restarter.mirai.ResourceManager.newCacheFile
-import com.github.hatoyuze.restarter.mirai.config.GameConfig
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.defaultFont
 import org.jetbrains.skia.Data
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Font
@@ -37,9 +37,9 @@ object GameLayoutDrawer {
             if (ResourceManager.isTesting) {
                 ResourceManager.getResourceAsStream("font/harmony/HarmonyOS_Sans_SC_Regular.ttf")
             } else {
-                GameConfig.defaultFont?.let { File(it).inputStream() }
-                    ?: PluginMain.getResourceAsStream("font/harmony/HarmonyOS_Sans_SC_Regular.ttf")
-                    ?: error("Cannot find font resource!")
+                if (defaultFont.isEmpty()) {
+                    PluginMain.getResourceAsStream("font/harmony/HarmonyOS_Sans_SC_Regular.ttf") ?: error("Cannot find font resource!")
+                }else File(defaultFont).inputStream()
             }
         Font(
             FontMgr.default.makeFromData(
@@ -60,8 +60,7 @@ object GameLayoutDrawer {
             if (ResourceManager.isTesting) {
                 ResourceManager.getResourceAsStream("font/noto-emoji/NotoColorEmoji.ttf")
             } else {
-                GameConfig.defaultFont?.let { File(it).inputStream() }
-                    ?: PluginMain.getResourceAsStream("font/noto-emoji/NotoColorEmoji.ttf")
+                PluginMain.getResourceAsStream("font/noto-emoji/NotoColorEmoji.ttf")
                     ?: error("Cannot find font resource!")
             }
         Font(
