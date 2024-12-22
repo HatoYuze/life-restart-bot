@@ -5,6 +5,7 @@ import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.linesCo
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.maxGrade
 import com.github.hatoyuze.restarter.game.entity.Life
 import com.github.hatoyuze.restarter.game.entity.Life.Companion.talents
+import com.github.hatoyuze.restarter.game.entity.LifeAttribute
 import org.jetbrains.skia.*
 import org.jetbrains.skia.RRect.Companion.makeXYWH
 
@@ -19,7 +20,7 @@ class GameProgressLayoutDrawer(
         fun getLifeLines(): Int = life.sumOf { it.linesCount() }
         Surface.makeRasterN32Premul(
             1000,
-            (getLifeLines() * (textLineHeight + 10) + life.size * 35 + INIT_EVENT_MESSAGE_Y + 50).toInt()
+            (getLifeLines() * (textLineHeight + 10) + life.size * 45 + INIT_EVENT_MESSAGE_Y + 50).toInt()
         )
     }
 
@@ -27,11 +28,13 @@ class GameProgressLayoutDrawer(
     private val canvas = surface.canvas
     private var lastY = INIT_EVENT_MESSAGE_Y
 
+    private val toDrawAttributes = mutableMapOf<Float, LifeAttribute>()
 
     private val paint = Paint {
         color = Color.WHITE
         isAntiAlias = true
     }
+
     private fun drawBackground() {
         val paint = Paint {
             color4f = Color4f(BACKGROUND_COLOR4F)
@@ -89,12 +92,66 @@ class GameProgressLayoutDrawer(
         for ((index, event) in life.withIndex()) {
             drawNextEntry(index, event)
         }
+        drawAttributes()
 
         return surface
     }
 
+    private fun drawAttributes() {
+        fun Int.padStart() = toString().padStart(3, ' ')
+        val font = GameLayoutDrawer.emojiFont
+        font.size = 18f
+
+        lateinit var defaultFont: Font
+        if (GameLayoutDrawer.enableSegoeEmoji) {
+            defaultFont = this.font
+            defaultFont.size = 18f
+        }
+
+        paint.color = Color.WHITE
+        for ((y, attributes) in toDrawAttributes) {
+
+            if (GameLayoutDrawer.enableSegoeEmoji) {
+                canvas.drawString(
+                        "$APPEARANCE_EMOJI ${attributes.appearance.padStart()  } |" +
+                        "$INTELLIGENT_EMOJI ${attributes.intelligent.padStart()} |" +
+                        "$STRENGTH_EMOJI ${attributes.strength.padStart()      } |" +
+                        "$MONEY_EMOJI ${attributes.money.padStart()            } |" +
+                        "$SPIRIT_EMOJI ${attributes.spirit.padStart()          }",
+                    MESSAGE_START_X, y - 5f, font, paint
+                )
+                continue
+            }
+
+            canvas.drawString(
+                    "$APPEARANCE_EMOJI  |" +
+                    "$INTELLIGENT_EMOJI  |" +
+                    "$STRENGTH_EMOJI  |" +
+                    "$MONEY_EMOJI  |" +
+                    "$SPIRIT_EMOJI  ",
+                MESSAGE_START_X,
+                y - 5f,
+                font,
+                paint
+            )
+            canvas.drawString(
+                    "$NOTO_COLOR_EMOJI_PAD${attributes.appearance.padStart() } | " +
+                    "$NOTO_COLOR_EMOJI_PAD${attributes.intelligent.padStart()} | " +
+                    "$NOTO_COLOR_EMOJI_PAD${attributes.strength.padStart()   } | " +
+                    "$NOTO_COLOR_EMOJI_PAD${attributes.money.padStart()      } | " +
+                    "$NOTO_COLOR_EMOJI_PAD${attributes.spirit.padStart()     }",
+                MESSAGE_START_X,
+                y - 5f,
+                defaultFont,
+                paint
+            )
+
+        }
+    }
+
     private fun drawNextEntry(age: Int, currentEvent: ExecutedEvent) {
         lastY += 20
+        toDrawAttributes[lastY] = currentEvent.attribute
         val messageLineStartX = MESSAGE_START_X + textWeight
 
         fun drawEventLine(eventName: String, isAppendLine: Boolean = true) {
@@ -124,7 +181,7 @@ class GameProgressLayoutDrawer(
             drawEventLine(it.eventName)
         }
 
-        lastY += 15
+        lastY += 25
     }
 
 
@@ -139,7 +196,14 @@ class GameProgressLayoutDrawer(
         const val MESSAGE_START_X = 40f
         const val EVENT_BACKGROUND_COLOR4F = 0xFF_383D45.toInt()
         const val BACKGROUND_COLOR4F = 0xFF_222831.toInt()
+
         private const val FONT_DEFAULT_SIZE = 24f
+        private const val NOTO_COLOR_EMOJI_PAD = "\t\t\t"
+        private const val APPEARANCE_EMOJI = "\uD83D\uDE0E"
+        private const val INTELLIGENT_EMOJI = "\uD83E\uDDE0"
+        private const val STRENGTH_EMOJI = "\uD83D\uDCAA"
+        private const val MONEY_EMOJI = "\uD83D\uDCB5"
+        private const val SPIRIT_EMOJI = "\uD83E\uDD70"
 
         private val maxLetterCountOneLine = (800 / GameLayoutDrawer.fontChineseLetterWidth).toInt()
         private fun String.wrapString(): String {
@@ -161,7 +225,8 @@ class GameProgressLayoutDrawer(
         fun ExecutedEvent.warpString(): ExecutedEvent {
             return ExecutedEvent(
                 mainEvent.copy(eventName = mainEvent.eventName.wrapString()),
-                subEvents.map { it.copy(eventName = it.eventName.wrapString()) }
+                subEvents.map { it.copy(eventName = it.eventName.wrapString()) },
+                attribute
             )
         }
 

@@ -138,7 +138,8 @@ data class Life(
         val events = nextEvents()
         return ExecutedEvent(
             events.first(),
-            events.drop(1)
+            events.drop(1),
+            LifeAttribute(property.attribute)
         )
     }
 
