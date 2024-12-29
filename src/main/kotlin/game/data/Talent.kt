@@ -21,8 +21,8 @@ data class Talent @JvmOverloads constructor(
     val name: String,
 
     // 互相排斥的天赋
-    @SerialName("exclusive")
-    val exclusive0: List<JsonPrimitive> = listOf(),
+    @SerialName("exclude")
+    val exclude0: List<JsonPrimitive> = listOf(),
     val effect: Map<AttributeType, Int> = emptyMap(),
     @Serializable(with = ConditionExpressionSerializer::class)
     val condition: ConditionExpression? = null,
@@ -31,7 +31,7 @@ data class Talent @JvmOverloads constructor(
     val status: Int = 0
 ) {
     @Transient
-    val exclusive = exclusive0.map { it.content.toInt() }
+    val exclude = exclude0.map { it.content.toInt() }
 
     val introduction: String
         get() = buildString {

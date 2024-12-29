@@ -32,7 +32,7 @@ object TalentManager : ITalentManager {
         return talent.condition?.let {
             if (!it.judgeAll(property)) null
             else talent
-        }
+        } ?: talent
     }
 
     // won't show talentHashMap.

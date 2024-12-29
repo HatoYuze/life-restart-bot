@@ -44,7 +44,7 @@ class Drawer {
                 -1,
                 3,4,5,6,2,
                 1,
-                talents = mutableListOf(1049, 1050, 1057)
+                talents = mutableListOf(1049, 1050, 1141)
             )
 
         )

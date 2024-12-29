@@ -12,7 +12,7 @@ class LifeEngineBuilder {
     var talents = listOf<Talent>()
         set(value) {
             val exclusive = mutableListOf<Int>()
-            value.onEach { exclusive.addAll(it.exclusive) }
+            value.onEach { exclusive.addAll(it.exclude) }
             require(value.none { it.id in exclusive }) { "选择了互相排斥的天赋！" }
             field = value
         }

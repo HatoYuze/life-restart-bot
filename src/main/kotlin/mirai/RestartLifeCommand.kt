@@ -261,8 +261,8 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
         val result = buildString {
             appendLine("#${talent.id}")
             appendLine(talent.introduction)
-            if (talent.exclusive.isNotEmpty())
-                appendLine("与 ${talent.exclusive.joinToString { it.toString() }} 冲突")
+            if (talent.exclude.isNotEmpty())
+                appendLine("与 ${talent.exclude.joinToString { it.toString() }} 冲突")
             appendLine("在 ${talent.condition?.chineseDescription() ?: "初始阶段"} 触发天赋效果")
             appendLine("作用：")
             for (effect in talent.effect) {
