@@ -3,6 +3,7 @@ package com.github.hatoyuze.restarter
 import com.github.hatoyuze.restarter.mirai.RestartLifeCommand
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.ifNull
+import com.github.hatoyuze.restarter.mirai.config.GameSaveData
 import com.github.hatoyuze.restarter.mirai.config.RegisterEventConfig
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.extension.PluginComponentStorage
@@ -63,6 +64,7 @@ object PluginMain : KotlinPlugin(
         GameConfig.reload()
         RegisterEventConfig.handleEvent()
 
+        GameSaveData.reload()
         commandPermission
     }
 

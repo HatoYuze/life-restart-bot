@@ -34,9 +34,6 @@ data class Attribute @JvmOverloads constructor(
     var events: MutableList<Int> = mutableListOf(),
     var additionAttr: Int = 0
 ) {
-    val attributeTotal: Int = 20
-    val maxAttribute: Int = 10
-    val attributeDisplayTotal: Int = 4
 
     fun getPropInteger(prop: AttributeType): Int = when (prop) {
         AttributeType.AGE -> age

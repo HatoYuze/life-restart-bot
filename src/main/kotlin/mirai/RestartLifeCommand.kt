@@ -7,8 +7,8 @@ import com.github.hatoyuze.restarter.draw.GameLayoutDrawer
 import com.github.hatoyuze.restarter.game.LifeEngine
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
-import com.github.hatoyuze.restarter.game.entity.Life.Companion.talents
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
+import com.github.hatoyuze.restarter.mirai.config.GameSaveData
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.isNotUser
@@ -82,7 +82,6 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
                 subject.uploadImage(it)
             }
             quote(buildMessageChain {
-                +image
                 +buildString {
                     appendLine("游戏结算：")
                     with(engine.ratingStatus) {
@@ -94,7 +93,9 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
                         appendLine("总分：${sum.value} ${sum.judge}")
                     }
                 }
+                +image
             })
+            GameSaveData.save(engine.life, sender.user)
         }
     }
 
@@ -199,6 +200,7 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
                     }
                 ))
         }
+        GameSaveData.save(engine.life, sender.user)
     }
 
 
@@ -208,7 +210,7 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
         if (!PluginMain.hasCustomPermission(sender.user)) {
             return@command
         }
-        val event = UserEvent.data[id] ?: run {
+        val event = UserEvent.Data[id] ?: run {
             quote("未找到 id 为 $id 的事件")
             return@command
         }
@@ -219,7 +221,7 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
             | 
             | 触发条件: ${
                 event.include?.chineseDescription() ?: if (event.noRandom) "需要完成事件 ${
-                    UserEvent.data.values.filter { libEvent -> libEvent.branch.any { it.second == event.id } }
+                    UserEvent.values.filter { libEvent -> libEvent.branch.any { it.second == event.id } }
                         .joinToString(" 或 ") { it.id.toString() }
                 }"
                 else "无条件"

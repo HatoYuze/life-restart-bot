@@ -2,7 +2,7 @@ package com.github.hatoyuze.restarter.draw
 
 import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.game.data.Talent
-import com.github.hatoyuze.restarter.game.entity.Life
+import com.github.hatoyuze.restarter.game.entity.ILife
 import com.github.hatoyuze.restarter.mirai.ResourceManager
 import com.github.hatoyuze.restarter.mirai.ResourceManager.newCacheFile
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.defaultFont
@@ -22,7 +22,7 @@ object GameLayoutDrawer {
         }
     }
 
-    fun createGamingImage(life: Life): File {
+    fun createGamingImage(life: ILife): File {
         val surface = GameProgressLayoutDrawer(font, life).draw()
         return newCacheFile("life-${life.hashCode()}.png").also {
             it.writeBytes(

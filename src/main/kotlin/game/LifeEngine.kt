@@ -2,8 +2,8 @@ package com.github.hatoyuze.restarter.game
 
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.entity.Attribute
-import com.github.hatoyuze.restarter.game.entity.Life
 import com.github.hatoyuze.restarter.game.entity.TalentManager
+import com.github.hatoyuze.restarter.game.entity.impl.Life
 
 class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
     internal val life = Life()
@@ -12,7 +12,17 @@ class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
         val initial = LifeEngineBuilder().apply(builder)
         val talents = initial.talents.map {
             if (it.replacement != null) {
-                it.replacement.replace()
+                var tryCount = 0
+                var replaceResult = it.replacement.replace()
+                while (replaceResult in initial.talents) {
+                    replaceResult = it.replacement.replace()
+                    if (tryCount >= 10) {
+                        throw IllegalStateException("在试图避免天赋重复的过程中发生了意料之外的问题，" +
+                            "这可能是因为指定天赋的所有替换项都已被包含")
+                    }
+                    tryCount++
+                }
+                replaceResult
             } else it
         }
 
@@ -49,11 +59,9 @@ class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
 
 
     companion object {
-        private val talentMap = Talent.data
 
         fun randomTalent(): List<Talent> = TalentManager.talentRandom(10)
 
-        fun searchTalent(id: Int): Talent = talentMap.entries.find { it.key == id }!!.value
     }
 
     val iterator = object : Iterator<LifeEvent> {

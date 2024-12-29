@@ -187,9 +187,9 @@ object RegisterEventConfig : AutoSavePluginConfig("register") {
     fun handleEvent() {
         if (!enabledCustomizedEvent) return
         events.forEach {
-            UserEvent.data[it.id] = it
+            UserEvent.Data[it.id] = it
         }
-        val validEventId = UserEvent.data.keys
+        val validEventId = UserEvent.keys
         var success = 0
         for ((range0, events) in enableAge) {
             val range = resolveRange(range0)

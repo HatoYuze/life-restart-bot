@@ -3,9 +3,12 @@ package com.github.hatoyuze.restarter
 import com.github.hatoyuze.restarter.draw.GameLayoutDrawer
 import com.github.hatoyuze.restarter.game.LifeEngine
 import com.github.hatoyuze.restarter.game.entity.Attribute
-import com.github.hatoyuze.restarter.game.entity.Life
 import com.github.hatoyuze.restarter.game.entity.TalentManager
+import com.github.hatoyuze.restarter.game.entity.impl.Life
+import com.github.hatoyuze.restarter.game.entity.impl.LifeSave
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.system.measureTimeMillis
 import kotlin.test.Test
 
@@ -26,6 +29,11 @@ class Drawer {
 
     }
 
+    val json = Json {
+        prettyPrint = true
+    }
+
+
     @Test
     fun game() {
         TestGame().data()
@@ -40,8 +48,15 @@ class Drawer {
             )
 
         )
+
         measureTimeMillis {
             GameLayoutDrawer.createGamingImage(life).also {
+                println(it.absolutePath)
+            }
+
+            val lifeSave = LifeSave.translate(life)
+            println(json.encodeToString(lifeSave))
+            GameLayoutDrawer.createGamingImage(lifeSave).also {
                 println(it.absolutePath)
             }
         }.also {

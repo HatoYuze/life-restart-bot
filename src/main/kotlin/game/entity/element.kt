@@ -1,18 +1,20 @@
 package com.github.hatoyuze.restarter.game.entity
 
 import com.github.hatoyuze.restarter.game.data.UserEvent
+import kotlinx.serialization.Serializable
 import kotlin.math.max
 
 data class Judgement(val grade: Int, val value: Int, val judge: String) {
 }
 
+@Serializable
 data class LifeAttribute(
-    val appearance: Int,
-    val intelligent: Int,
-    val strength: Int,
-    val spirit: Int,
-    val lifeAge: Int,
-    val money: Int
+    var appearance: Int,
+    var intelligent: Int,
+    var strength: Int,
+    var spirit: Int,
+    var lifeAge: Int,
+    var money: Int
 ) {
     constructor(attribute: Attribute) : this(
         attribute.appearance,

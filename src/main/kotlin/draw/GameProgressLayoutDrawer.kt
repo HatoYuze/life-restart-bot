@@ -3,15 +3,14 @@ package com.github.hatoyuze.restarter.draw
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.linesCount
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.maxGrade
-import com.github.hatoyuze.restarter.game.entity.Life
-import com.github.hatoyuze.restarter.game.entity.Life.Companion.talents
+import com.github.hatoyuze.restarter.game.entity.ILife
 import com.github.hatoyuze.restarter.game.entity.LifeAttribute
 import org.jetbrains.skia.*
 import org.jetbrains.skia.RRect.Companion.makeXYWH
 
 class GameProgressLayoutDrawer(
     private val font: Font,
-    val life0: Life
+    val life0: ILife
 ) {
 
     private val textLineHeight by lazy { fontWithInit().measureText("你出生了。").let { it.bottom - it.top } }
@@ -111,6 +110,8 @@ class GameProgressLayoutDrawer(
         paint.color = Color.WHITE
         for ((y, attributes) in toDrawAttributes) {
 
+            // NOTE: Segoe Emoji 字体支持非 emoji 字体的渲染，可以直接输入文字
+            //       而使用 NotoColorEmoji 则与此不同，使用 NotoColorEmoji 无法渲染出正常的文字/数字，需要分开渲染
             if (GameLayoutDrawer.enableSegoeEmoji) {
                 canvas.drawString(
                         "$APPEARANCE_EMOJI ${attributes.appearance.padStart()  } |" +
@@ -123,6 +124,7 @@ class GameProgressLayoutDrawer(
                 continue
             }
 
+            // NOTE: NotoColorEmoji 会将所有的半角空格渲染为全角空格形式，空隙极大。以下数据不建议更改
             canvas.drawString(
                     "$APPEARANCE_EMOJI  |" +
                     "$INTELLIGENT_EMOJI  |" +

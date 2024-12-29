@@ -4,7 +4,6 @@ import com.github.hatoyuze.restarter.game.LifeEngine
 import com.github.hatoyuze.restarter.game.data.AgeSupportEvents
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
-import com.github.hatoyuze.restarter.game.entity.Life.Companion.talents
 import com.github.hatoyuze.restarter.mirai.ResourceManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -19,7 +18,7 @@ class TestGame {
     fun data() {
         ResourceManager.isTesting = true
         var used = measureTime {
-            UserEvent.data
+            UserEvent.Data
         }
         println("Loaded event data used $used")
 

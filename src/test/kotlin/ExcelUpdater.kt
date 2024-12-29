@@ -45,7 +45,7 @@ class ExcelUpdater {
         }
         val result = events.associateBy { it.id }
         TestGame().data()
-        val new = events.filter { UserEvent.data[it.id] == null }.size
+        val new = events.filter { UserEvent.Data[it.id] == null }.size
 
         val keep = UserEvent.data.filter { result[it.key] == null }
         events = events.toMutableList().also { it.addAll(keep.values) }
