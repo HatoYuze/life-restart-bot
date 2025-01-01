@@ -17,12 +17,12 @@ data class LifeAttribute(
     var money: Int
 ) {
     constructor(attribute: Attribute) : this(
-        attribute.appearance,
-        attribute.intelligent,
-        attribute.strength,
-        attribute.spirit,
-        attribute.lifeAge,
-        attribute.money
+        appearance = attribute.appearance,
+        intelligent = attribute.intelligent,
+        strength = attribute.strength,
+        spirit = attribute.spirit,
+        lifeAge = attribute.lifeAge,
+        money = attribute.money
     )
 }
 

@@ -83,11 +83,8 @@ class TestGame {
         }
         runBlocking {
             delay(1.seconds)
-            val input = "1,2"
-            val selected = input.split(",").mapNotNull { it.toIntOrNull() }.toSet()
-
             val talents =
-                selected.map { selectList.getOrElse(it - 1) { selectList.random() } }.plus(Talent.data[1048]!!)
+                listOf(Talent.data[1048]!!, Talent.data[1147]!!, selectList.random())
 
             val engine = LifeEngine {
                 appearance = (0..15).random()

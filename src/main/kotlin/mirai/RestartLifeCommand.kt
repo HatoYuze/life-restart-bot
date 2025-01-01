@@ -28,7 +28,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.absoluteValue
-import kotlin.math.max
+import kotlin.math.min
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
@@ -141,6 +141,36 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         }
     }
 
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+    @Description("获取自己的重生历史记录")
+    @SubCommand
+    suspend fun my(
+        commandContext: CommandContext,
+    ) = commandContext.run {
+        testPermission()
+        if (!GameConfig.enableGameSave) {
+            quote("当前无法使用该功能哦！\n请联系 Bot 主更改设置!")
+            PluginMain.logger.error("Oops! 当 game.yml/enableGameSave 设定为 `false` 时，无法存储记录，此时无法使用 my 功能")
+            return@run
+        }
+        val data = GameSaveData.data.filter { it.content.userId == sender.user?.id }
+
+        val messageContent = buildString {
+            for (i in 0..min(9, data.lastIndex)) {
+                val info = data[i]
+                appendLine("#${i + 1} [id ${info.id}] 用户 ${info.content.userNameBase64.decodeBase64()}(${info.content.userId}) 的记录 评分：${info.content.score}")
+                appendLine(
+                    "创建时间： ${
+                        Instant.ofEpochMilli(info.content.createAtTimestampUTC).atZone(ZoneId.systemDefault())
+                            .toLocalDateTime().format(dateTimeFormatter)
+                    }"
+                )
+            }
+        }
+        quote(messageContent)
+    }
+
     @Description("获取排行榜")
     @SubCommand
     suspend fun rank(
@@ -163,13 +193,13 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         }.sortedBy { it.content.score }
 
         val messageContent = buildString {
-            for (i in 0..max(9, data.lastIndex)) {
+            for (i in 0..min(9, data.lastIndex)) {
                 val info = data[i]
-                appendLine("#${i + 1} [id ${info.id}] 用户 ${info.content.userNameBase64.decodeBase64()}(${info.id}) 的记录 评分：${info.content.score}")
+                appendLine("#${i + 1} [id ${info.id}] 用户 ${info.content.userNameBase64.decodeBase64()}(${info.content.userId}) 的记录 评分：${info.content.score}")
                 appendLine(
                     "创建时间： ${
                         Instant.ofEpochMilli(info.content.createAtTimestampUTC).atZone(ZoneId.systemDefault())
-                            .toLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                            .toLocalDateTime().format(dateTimeFormatter)
                     }"
                 )
             }

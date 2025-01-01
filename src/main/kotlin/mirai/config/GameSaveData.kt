@@ -56,7 +56,7 @@ object GameSaveData: AutoSavePluginData("life") {
 
     fun timeFilter(duration: Duration): List<Data> {
         val currentTimeUTC = Instant.now().toEpochMilli()
-        val startTime = duration.inWholeMilliseconds + currentTimeUTC
+        val startTime = currentTimeUTC - duration.inWholeMilliseconds
         return data.filter { it.content.createAtTimestampUTC >= startTime }
     }
 

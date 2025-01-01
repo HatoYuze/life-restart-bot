@@ -34,8 +34,6 @@ data class LifeSave(
     @SerialName("ta")
     val totalAttributes: List<Int>,
 ) : ILife {
-
-
     @Transient
     val events = events0.map { GlobalEventLibrary[it] ?: error("存档文件中的事件 id=$it 丢失") }
     private val attributeStatus by lazy {
@@ -106,7 +104,7 @@ data class LifeSave(
     }
 
     @Transient
-    val internalIterator0 = lifeEventList.iterator()
+    var internalIterator0 = lifeEventList.listIterator()
 
     @Transient
     private var _internalIteratorIndex = 0
@@ -184,11 +182,19 @@ data class LifeSave(
             )
         }
 
+    private fun reset() {
+        internalIterator0 = lifeEventList.listIterator()
+        _internalIteratorIndex = 0
+    }
     override fun isLifeEnd(): Boolean =
-        !internalIterator0.hasNext()
+        !hasNext()
 
     override fun hasNext(): Boolean {
-        return internalIterator0.hasNext()
+        if (!internalIterator0.hasNext()) {
+            reset()
+            return false
+        }
+        return true
     }
 
     override fun next(): ExecutedEvent {
@@ -198,6 +204,9 @@ data class LifeSave(
     }
 
     override fun iterator(): Iterator<ExecutedEvent> {
+        if (!internalIterator0.hasNext()) {
+            reset()
+        }
         return internalIterator0
     }
 }

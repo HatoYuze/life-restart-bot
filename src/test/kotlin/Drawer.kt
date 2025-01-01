@@ -59,6 +59,9 @@ class Drawer {
             GameLayoutDrawer.createGamingImage(lifeSave).also {
                 println(it.absolutePath)
             }
+            GameLayoutDrawer.createGamingImage(lifeSave).also {
+                println(it.absolutePath)
+            }
         }.also {
             println("Drawing used $it ms")
         }

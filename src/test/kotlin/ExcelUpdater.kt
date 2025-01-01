@@ -4,6 +4,7 @@ import com.github.hatoyuze.restarter.game.data.ConditionExpression
 import com.github.hatoyuze.restarter.game.data.UserEvent
 import com.github.hatoyuze.restarter.game.data.serialization.ReferEventId
 import com.github.hatoyuze.restarter.game.entity.AttributeType
+import com.github.hatoyuze.restarter.mirai.ResourceManager
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.kotlinx.dataframe.DataFrame
@@ -35,6 +36,7 @@ class ExcelUpdater {
 
     @Test
     fun read() {
+        ResourceManager.isTesting = true
         println("Current work dir -> ${System.getProperty("user.dir")}")
 
         var events: List<UserEvent>
@@ -83,7 +85,7 @@ class ExcelUpdater {
             val effect: MutableMap<AttributeType, Int> = mutableMapOf()
             (it["effect:CHR"] as? Double)?.toInt()?.let { data -> effect[AttributeType.CHR] = data }
             (it["effect:INT"] as? Double)?.toInt()?.let { data -> effect[AttributeType.INT] = data }
-            (it["effect:STR"] as? Double)?.toInt()?.let { data -> effect[AttributeType.SPR] = data }
+            (it["effect:STR"] as? Double)?.toInt()?.let { data -> effect[AttributeType.STR] = data }
             (it["effect:MNY"] as? Double)?.toInt()?.let { data -> effect[AttributeType.MNY] = data }
             (it["effect:SPR"] as? Double)?.toInt()?.let { data -> effect[AttributeType.SPR] = data }
             (it["effect:LIF"] as? Double)?.toInt()?.let { data -> effect[AttributeType.LIF] = data }
