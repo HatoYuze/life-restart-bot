@@ -69,10 +69,10 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         commandContext: CommandContext,
         @Name("初始颜值值")
         initialAppearance: Int = 0,
-        @Name("初始体质值")
-        initialStrength: Int = 0,
         @Name("初始智力值")
         initialIntelligent: Int = 0,
+        @Name("初始体质值")
+        initialStrength: Int = 0,
         @Name("初始家境值")
         initialMoney: Int = 0,
         @Name("初始快乐值")
@@ -213,10 +213,10 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         commandContext: CommandContext,
         @Name("初始颜值值")
         initialAppearance: Int = 0,
-        @Name("初始体质值")
-        initialStrength: Int = 0,
         @Name("初始智力值")
         initialIntelligent: Int = 0,
+        @Name("初始体质值")
+        initialStrength: Int = 0,
         @Name("初始家境值")
         initialMoney: Int = 0,
         @Name("初始快乐值")
