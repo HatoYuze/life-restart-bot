@@ -154,7 +154,9 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
             PluginMain.logger.error("Oops! 当 game.yml/enableGameSave 设定为 `false` 时，无法存储记录，此时无法使用 my 功能")
             return@run
         }
-        val data = GameSaveData.data.filter { it.content.userId == sender.user?.id }
+        val data = GameSaveData.data
+            .filter { it.content.userId == sender.user?.id }
+            .sortedBy { -it.content.score }
 
         val messageContent = buildString {
             for (i in 0..min(9, data.lastIndex)) {
@@ -190,7 +192,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
             "month", "m" -> GameSaveData.timeFilter(30.days)
             "all", "max", "a" -> GameSaveData.data
             else -> GameSaveData.timeFilter(1.days)
-        }.sortedBy { it.content.score }
+        }.sortedBy { -it.content.score }
 
         val messageContent = buildString {
             for (i in 0..min(9, data.lastIndex)) {
