@@ -133,9 +133,10 @@ data class LifeSave(
         return result
     }
     companion object {
-
-
         private val encoder = Base64.getEncoder()
+        private val decoder = Base64.getDecoder()
+
+        fun String.decodeBase64() = decoder.decode(this).decodeToString()
 
         /**
          * 会消耗 [life] 迭代器直到迭代完成

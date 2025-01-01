@@ -76,6 +76,9 @@ object PluginMain : KotlinPlugin(
     override fun onDisable() {
         var i = 0
         File(GameConfig.cachePath.ifNull(PluginMain.dataFolderPath.pathString)).listFiles()?.onEach {
+            if (!it.name.endsWith("png"))
+                return@onEach
+
             it.delete()
             i++
         } ?: error("缓存目录并不是有效的文件夹")

@@ -14,7 +14,7 @@ object GameConfig : AutoSavePluginConfig("game") {
     @ValueDescription("缓存每一次游戏的结果，为 false 时不再缓存，且无法使用排行榜等功能")
     val enableGameSave: Boolean by value(true)
 
-    @ValueDescription("缓存数据的过期时间，过期后这些数据将会被删除，单位为小时。为 -1 时永远不会删除。\n需要启用 enableGameSave 功能")
+    @ValueDescription("缓存数据的过期时间，过期后这些数据将会被永久删除，单位为小时。为 -1 时永远不会删除。\n需要启用 enableGameSave 功能")
     val dataExpireTime: Int by value(-1)
 
     @ValueDescription("绘图使用的字体，如需自定义需要在此处填写字体文件的绝对路径\n默认下使用 HarmonyOS Sans Regular 字体")
