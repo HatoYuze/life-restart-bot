@@ -8,7 +8,12 @@ import com.github.hatoyuze.restarter.game.LifeEngine
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
 import com.github.hatoyuze.restarter.game.entity.impl.LifeSave.Companion.decodeBase64
+import com.github.hatoyuze.restarter.mirai.config.CommandLimitData.checkCooldownStatus
+import com.github.hatoyuze.restarter.mirai.config.CommandLimitData.dailyUserRecord
+import com.github.hatoyuze.restarter.mirai.config.CommandLimitData.isUserOverLimit
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.Limit.Companion.isNone
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.Limit.Companion.userDailyGamingLimit
 import com.github.hatoyuze.restarter.mirai.config.GameSaveData
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
@@ -35,6 +40,28 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
             throw PermissionDeniedException()
         }
     }
+    private suspend fun CommandContext.testLimit(): Unit? {
+        if (userDailyGamingLimit.isNone()) return Unit
+        val user = sender.user ?: return Unit
+
+        if (user.isUserOverLimit()) {
+            if (dailyUserRecord[user.id]!! <= userDailyGamingLimit.get() + 1) {
+                quote("您的今日游玩次数已用完，明天再来吧？")
+            }
+            return null
+        }
+        dailyUserRecord.compute(user.id) { _, count ->
+            (count ?: 0) + 1
+        }
+
+        val status = sender.checkCooldownStatus()
+        if (status.isWaiting) {
+            quote("该功能目前还在冷却中哦~\n您还需要等待 ${status.remainingSeconds} 秒后 才能正常使用功能~")
+           return null
+        }
+
+        return Unit
+    }
 
     @Description("开始一场新的人生")
     @SubCommand
@@ -53,6 +80,9 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
     ) = commandContext.run {
         commandContext.run command@{
             testPermission()
+            testLimit() ?: return@command
+
+
             val objectTalents = getTalents(true) ?: return@command
 
             val statusChange = objectTalents.map { it.status }
@@ -193,6 +223,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         initialSpirit: Int = 0
     ) = commandContext.run command@{
         testPermission()
+        testLimit() ?: return@command
         val objectTalents = getTalents() ?: return@command
 
         val statusChange = objectTalents.map { it.status }
@@ -393,7 +424,7 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
 
     private fun distributeValues(values: List<Int>, pointChange: Int = 0): List<Int> {
         val totalSum = values.sum()
-        val maxAttributePoint = GameConfig.maxAttributePoint + pointChange
+        val maxAttributePoint = GameConfig.maxAttributePoint.toInt() + pointChange
 
         return when {
             totalSum > maxAttributePoint -> {

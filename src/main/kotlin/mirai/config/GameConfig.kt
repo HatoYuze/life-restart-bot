@@ -1,12 +1,55 @@
 package com.github.hatoyuze.restarter.mirai.config
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 object GameConfig : AutoSavePluginConfig("game") {
+
+    @Serializable
+    data class Limit(
+        @ValueDescription("每个用户一天内（UTC+8 00:00 时刷新）的模拟人生最高次数。为 -1 时无限制")
+        val userDailyGamingLimit: Int = -1,
+        @ValueDescription("冷却的作用单位，可选为 GROUP 或者 SENDER\n - 选用 SUBJECT 表示冷却为整个 联系人 对象(可能为群聊 或者 好友)\n - 选用 SENDER 表示冷却指令发送者频率")
+        val frequencyType: ContactType,
+        @ValueDescription("执行指令冷却的时长，单位为秒\n为 -1 时表示无冷却")
+        val frequencyLimitSeconds: Int = -1,
+    ) {
+        @Serializable
+        enum class ContactType{
+            SUBJECT, SENDER
+        }
+        companion object {
+            val userDailyGamingLimit: Optional<Int>
+                get() {
+                    val data = limit.userDailyGamingLimit
+                    return when  {
+                        data < 0 -> Optional.empty()
+                        else -> Optional.of(data)
+                    }
+                }
+            val frequencyType: ContactType
+                get() =  limit.frequencyType
+            val frequencyLimitSeconds: Optional<Duration>
+                get() {
+                    val data = limit.frequencyLimitSeconds
+                    return when  {
+                        data < 0 -> Optional.empty()
+                        else -> Optional.of(data.seconds)
+                    }
+                }
+
+            fun Optional<*>.isNone() = this.getOrNull() == null
+        }
+    }
+
     @ValueDescription("最大总属性点，用户分配的属性点最终一定为该值（默认为20）")
-    val maxAttributePoint: Int by value(20)
+    val maxAttributePoint: UInt by value(20.toUInt())
 
     @ValueDescription("在内存中缓存运行过程中创建的临时事件")
     val enableCacheTemporaryEvent: Boolean by value(false)
@@ -23,6 +66,8 @@ object GameConfig : AutoSavePluginConfig("game") {
     @ValueDescription("临时存储文件的目录\n在插件退出时，这些图片会被清除, 为空时表示插件的 data 目录")
     val cachePath: String by value("")
 
+    @ValueDescription("关于人生模拟器的相关频率限制")
+    val limit: Limit by value(Limit(userDailyGamingLimit = -1,  frequencyType = Limit.ContactType.SUBJECT, frequencyLimitSeconds = -1))
 
     fun String?.ifNull(replacement: String) = if (this.isNullOrEmpty()) replacement else this
 }
