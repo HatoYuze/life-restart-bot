@@ -3,6 +3,7 @@ package com.github.hatoyuze.restarter.draw
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.linesCount
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.maxGrade
+import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.showPostEvent
 import com.github.hatoyuze.restarter.game.entity.ILife
 import com.github.hatoyuze.restarter.game.entity.LifeAttribute
 import org.jetbrains.skia.*
@@ -178,6 +179,10 @@ class GameProgressLayoutDrawer(
         lastY += textLineHeight + 10
         canvas.drawString("第 $age 岁", MESSAGE_START_X, lastY, font, paint)
         drawEventLine(currentEvent.mainEvent.eventName, false)
+
+        if (currentEvent.showPostEvent()) {
+            drawEventLine(currentEvent.mainEvent.postEvent!!)
+        }
 
         currentEvent.subEvents.onEach {
             drawEventLine(it.eventName)

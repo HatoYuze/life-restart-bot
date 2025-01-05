@@ -29,10 +29,13 @@ object TalentManager : ITalentManager {
 
     override fun talentTakeEffect(talentId: Int, property: Attribute): Talent? {
         val talent = talentHashMap[talentId] ?: return null
-        return talent.condition?.let {
+        if (talent.condition == null) { // 无条件
+            return talent
+        }
+        return talent.condition.let {
             if (!it.judgeAll(property)) null
             else talent
-        } ?: talent
+        }
     }
 
     // won't show talentHashMap.

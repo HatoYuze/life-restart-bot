@@ -45,7 +45,17 @@ data class ExecutedEvent(
 
     companion object {
         private fun UserEvent.lineCount() = eventName.split('\n').size
-        fun ExecutedEvent.linesCount() = mainEvent.lineCount() + subEvents.sumOf { sub -> sub.lineCount() }
+        fun ExecutedEvent.linesCount(): Int {
+            var mainLineCount = mainEvent.lineCount()
+            if (showPostEvent()) {
+                mainLineCount += mainEvent.postEvent?.split('\n')?.size ?: 0
+            }
+            return mainLineCount + subEvents.sumOf { sub -> sub.lineCount() }
+        }
+        fun ExecutedEvent.showPostEvent() =
+            mainEvent.postEvent != null &&
+                (subEvents.isEmpty() || (mainEvent.isTalentEvent && subEvents.size == 1))
+
         fun ExecutedEvent.maxGrade() = max(mainEvent.grade, subEvents.maxOfOrNull { it.grade } ?: 0)
     }
 }
