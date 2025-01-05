@@ -41,6 +41,14 @@ object GameSaveData: AutoSavePluginData("life") {
 
     private var lastId: Int by value(100)
 
+    private val tmsData: MutableMap<Long, Int> by value(mutableMapOf())
+
+    fun flushTmsData(userId: Long): Int {
+        var oldValue = tmsData[userId] ?: 0
+        oldValue++
+        tmsData[userId] = oldValue
+        return oldValue
+    }
 
     fun save(life: Life, context: User? = null): Optional<Int> {
         if (!enableGameSave) return Optional.empty()

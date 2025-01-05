@@ -11,6 +11,7 @@ import kotlin.time.Duration.Companion.seconds
 
 object GameConfig : AutoSavePluginConfig("game") {
 
+    // https://github.com/mamoe/mirai/issues/1825
     @Serializable
     data class Limit(
         @ValueDescription("每个用户一天内（UTC+8 00:00 时刷新）的模拟人生最高次数。为 -1 时无限制")

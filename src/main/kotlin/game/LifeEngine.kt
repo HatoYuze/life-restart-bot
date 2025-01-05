@@ -4,12 +4,15 @@ import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.entity.Attribute
 import com.github.hatoyuze.restarter.game.entity.TalentManager
 import com.github.hatoyuze.restarter.game.entity.impl.Life
+import com.github.hatoyuze.restarter.mirai.config.GameSaveData
+import net.mamoe.mirai.console.command.CommandContext
 
-class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
+class LifeEngine(initial: LifeEngineBuilder) : Sequence<LifeEvent> {
     internal val life = Life()
 
+    constructor(builder: LifeEngineBuilder.() -> Unit) : this(LifeEngineBuilder().apply(builder))
+
     init {
-        val initial = LifeEngineBuilder().apply(builder)
         val talents = initial.talents.map {
             if (it.replacement != null) {
                 var tryCount = 0
@@ -35,7 +38,8 @@ class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
             initial.money,
             initial.spirit,
             1,
-            talents = talents.map { it.id }.toMutableList()
+            talents = talents.map { it.id }.toMutableList(),
+            tms = initial.tms
         )
         life.restartLife(attr)
     }
@@ -88,4 +92,11 @@ class LifeEngine(builder: LifeEngineBuilder.() -> Unit) : Sequence<LifeEvent> {
     }
 
     override fun iterator(): Iterator<LifeEvent> = iterator
+}
+
+inline fun CommandContext.LifeEngine(builder: LifeEngineBuilder.() -> Unit): LifeEngine {
+    val lifeEngineBuilder = LifeEngineBuilder()
+    lifeEngineBuilder.builder()
+    lifeEngineBuilder.tms = GameSaveData.flushTmsData(sender.user?.id ?: -1)
+    return LifeEngine(lifeEngineBuilder)
 }

@@ -14,7 +14,7 @@ enum class AttributeType(val chineseDesc: String) {
     LIF("寿命"),  //寿命
     EVT("事件的 id"),  //事件
     RDM("随机属性"),  //随机
-    TMS("TMS 属性"),  //wtf??
+    TMS("重生次数"),
     AET("上一个事件的 id"),  //前一个事件
 }
 

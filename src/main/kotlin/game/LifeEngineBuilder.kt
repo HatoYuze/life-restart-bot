@@ -9,6 +9,7 @@ class LifeEngineBuilder {
     var strength: Int = 5
     var money: Int = 5
     var spirit: Int = 5
+    var tms: Int = 0
     var talents = listOf<Talent>()
         set(value) {
             val exclusive = mutableListOf<Int>()
