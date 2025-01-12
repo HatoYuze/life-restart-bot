@@ -1,11 +1,13 @@
 package com.github.hatoyuze.restarter.mirai.config
 
+import com.github.hatoyuze.restarter.mirai.ResourceManager
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
+import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -70,5 +72,12 @@ object GameConfig : AutoSavePluginConfig("game") {
     @ValueDescription("关于人生模拟器的相关频率限制")
     val limit: Limit by value(Limit(userDailyGamingLimit = -1,  frequencyType = Limit.ContactType.SUBJECT, frequencyLimitSeconds = -1))
 
+    @ValueDescription("生成的 JPG 人生模拟器图片压缩质量，越高质量越好，同时用时越久\n值需要大于 0，范围为 0 到 100，默认为 70")
+    val jpgQuality: UInt by value(70.toUInt())
+
+    val quality: Int by lazy {
+        if (ResourceManager.isTesting) 70
+        else min(jpgQuality.toInt(),100)
+    }
     fun String?.ifNull(replacement: String) = if (this.isNullOrEmpty()) replacement else this
 }

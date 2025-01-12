@@ -33,7 +33,9 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
-object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
+object RestartLifeCommand : CompositeCommand(PluginMain, "remake",
+    parentPermission = PluginMain.commandPermission
+) {
 
     private fun CommandContext.testPermission() {
         if (!PluginMain.hasCustomPermission(sender.user)) {
@@ -57,7 +59,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake") {
         val status = sender.checkCooldownStatus()
         if (status.isWaiting) {
             quote("该功能目前还在冷却中哦~\n您还需要等待 ${status.remainingSeconds} 秒后 才能正常使用功能~")
-           return null
+            return null
         }
 
         return Unit

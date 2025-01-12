@@ -6,6 +6,9 @@ import com.github.hatoyuze.restarter.game.entity.ILife
 import com.github.hatoyuze.restarter.mirai.ResourceManager
 import com.github.hatoyuze.restarter.mirai.ResourceManager.newCacheFile
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.defaultFont
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.quality
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.skia.Data
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Font
@@ -22,12 +25,13 @@ object GameLayoutDrawer {
         }
     }
 
-    fun createGamingImage(life: ILife): File {
+    suspend fun createGamingImage(life: ILife): File {
         val surface = GameProgressLayoutDrawer(font, life).draw()
-        return newCacheFile("life-${life.hashCode()}.png").also {
-            it.writeBytes(
-                surface.makeImageSnapshot().encodeToData(EncodedImageFormat.PNG)?.bytes ?: byteArrayOf(0)
-            )
+        return newCacheFile("life-${life.hashCode()}.jpg").also {
+            val code = surface.makeImageSnapshot().encodeToData(EncodedImageFormat.JPEG, quality) ?: error("无法渲染图片！")
+            withContext(Dispatchers.IO) {
+                it.writeBytes(code.bytes)
+            }
         }
     }
 

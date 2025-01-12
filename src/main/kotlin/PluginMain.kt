@@ -1,6 +1,7 @@
 package com.github.hatoyuze.restarter
 
 import com.github.hatoyuze.restarter.mirai.RestartLifeCommand
+import com.github.hatoyuze.restarter.mirai.config.CommandLimitData
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.ifNull
 import com.github.hatoyuze.restarter.mirai.config.GameSaveData
@@ -63,12 +64,13 @@ object PluginMain : KotlinPlugin(
         RegisterEventConfig.reload()
         GameConfig.reload()
         RegisterEventConfig.handleEvent()
+        CommandLimitData.reload()
 
         GameSaveData.reload()
         commandPermission
     }
 
-    private val commandPermission by lazy {
+    val commandPermission by lazy {
         PermissionService.INSTANCE.register(permissionId("command-execute"), "允许执行人生重开器指令", parentPermission)
     }
 
@@ -76,7 +78,7 @@ object PluginMain : KotlinPlugin(
     override fun onDisable() {
         var i = 0
         File(GameConfig.cachePath.ifNull(PluginMain.dataFolderPath.pathString)).listFiles()?.onEach {
-            if (!it.name.endsWith("png"))
+            if (!(it.name.endsWith("png") || it.name.endsWith("jpg")))
                 return@onEach
 
             it.delete()

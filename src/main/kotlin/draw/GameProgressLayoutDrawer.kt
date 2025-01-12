@@ -10,12 +10,26 @@ import org.jetbrains.skia.*
 import org.jetbrains.skia.RRect.Companion.makeXYWH
 
 class GameProgressLayoutDrawer(
-    private val font: Font,
+    private val font0: Font,
     val life0: ILife
 ) {
 
-    private val textLineHeight by lazy { fontWithInit().measureText("你出生了。").let { it.bottom - it.top } }
-    private val textWeight = fontWithInit().measureTextWidth("第 500 岁")
+    private val titleFont by lazy { font0.apply { size = 40f } }
+    private val defaultFont by lazy {
+        font0.apply {
+            size = FONT_DEFAULT_SIZE
+            edging = FontEdging.ANTI_ALIAS
+        }
+    }
+    private val emojiTextDescFont by lazy {
+        font0.apply {
+            size = 18f
+        }
+    }
+    private val subTitleFont by lazy { font0.apply { size = 30f } }
+
+    private val textLineHeight by lazy { defaultFont.measureText("你出生了。").let { it.bottom - it.top } }
+    private val textWeight = defaultFont.measureTextWidth("第 500 岁")
     private val surface by lazy {
         fun getLifeLines(): Int = life.sumOf { it.linesCount() }
         Surface.makeRasterN32Premul(
@@ -56,31 +70,26 @@ class GameProgressLayoutDrawer(
     }
 
     private fun drawTitle() {
-        val font = font.also { it.size = 40f }
-        //85
-        surface.drawStringCentral("人生模拟器", font, 75f, paint)
+        surface.drawStringCentral("人生模拟器", titleFont, 75f, paint)
         paint.strokeWidth = 5f
         paint.mode = PaintMode.FILL
 
         canvas.drawLine(50f, 75f + 15f, 1000f - 50f, 75f + 15f, paint)
         paint.strokeWidth = 0f
-        font.size = FONT_DEFAULT_SIZE
     }
 
     private fun drawSelectedTalent() {
         val drawer = TalentLayoutDrawer(
-            surface, font, life0.talents, surfaceRange = Point(1000f, 1034f)
+            surface, font0, life0.talents, surfaceRange = Point(1000f, 1034f)
         )
         var y = 80f
 
-        val font = font.also { it.size = 30f }
-        surface.drawStringCentral("天赋列表", font, 130f, paint)
+        surface.drawStringCentral("天赋列表", subTitleFont, 130f, paint)
 
         life0.talents.onEach { talent ->
             y += drawer.boxHeight + 20
             drawer.drawBox(y, talent, -1)
         }
-        font.size = FONT_DEFAULT_SIZE
     }
 
     fun draw(): Surface {
@@ -104,8 +113,7 @@ class GameProgressLayoutDrawer(
 
         lateinit var defaultFont: Font
         if (!GameLayoutDrawer.enableSegoeEmoji) {
-            defaultFont = this.font
-            defaultFont.size = 18f
+            defaultFont = emojiTextDescFont
         }
 
         paint.color = Color.WHITE
@@ -162,7 +170,7 @@ class GameProgressLayoutDrawer(
             eventName.split('\n').onEach {
                 if (isAppendLine || !isFirst)
                     lastY += textLineHeight + 10
-                canvas.drawString(it, messageLineStartX, lastY, font, paint)
+                canvas.drawString(it, messageLineStartX, lastY, defaultFont, paint)
                 isFirst = false
             }
         }
@@ -177,7 +185,7 @@ class GameProgressLayoutDrawer(
         )
         paint.color4f = Color4f(Color.WHITE)
         lastY += textLineHeight + 10
-        canvas.drawString("第 $age 岁", MESSAGE_START_X, lastY, font, paint)
+        canvas.drawString("第 $age 岁", MESSAGE_START_X, lastY, defaultFont, paint)
         drawEventLine(currentEvent.mainEvent.eventName, false)
 
         if (currentEvent.showPostEvent()) {
@@ -190,13 +198,6 @@ class GameProgressLayoutDrawer(
 
         lastY += 25
     }
-
-
-    private fun fontWithInit(): Font =
-        font.also {
-            it.size = FONT_DEFAULT_SIZE
-            it.edging = FontEdging.ANTI_ALIAS
-        }
 
     companion object {
         const val INIT_EVENT_MESSAGE_Y = 350f
