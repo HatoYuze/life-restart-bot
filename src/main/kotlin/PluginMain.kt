@@ -24,7 +24,7 @@ object PluginMain : KotlinPlugin(
     JvmPluginDescription(
         id = "com.github.hatoyuze.restarter.life-restarter",
         name = "LifeRestarter",
-        version = "0.5.0"
+        version = "0.5.1"
     ) {
         author("HatoYuze")
         info("""人生重开器.""".trimIndent())
