@@ -70,15 +70,15 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake",
     suspend fun start(
         commandContext: CommandContext,
         @Name("初始颜值值")
-        initialAppearance: Int = 0,
+        initialAppearance: UInt = 0u,
         @Name("初始智力值")
-        initialIntelligent: Int = 0,
+        initialIntelligent: UInt = 0u,
         @Name("初始体质值")
-        initialStrength: Int = 0,
+        initialStrength: UInt = 0u,
         @Name("初始家境值")
-        initialMoney: Int = 0,
+        initialMoney: UInt = 0u,
         @Name("初始快乐值")
-        initialSpirit: Int = 0
+        initialSpirit: UInt = 0u
     ) = commandContext.run {
         commandContext.run command@{
             testPermission()
@@ -246,15 +246,15 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake",
     suspend fun text(
         commandContext: CommandContext,
         @Name("初始颜值值")
-        initialAppearance: Int = 0,
+        initialAppearance: UInt = 0u,
         @Name("初始智力值")
-        initialIntelligent: Int = 0,
+        initialIntelligent: UInt = 0u,
         @Name("初始体质值")
-        initialStrength: Int = 0,
+        initialStrength: UInt = 0u,
         @Name("初始家境值")
-        initialMoney: Int = 0,
+        initialMoney: UInt = 0u,
         @Name("初始快乐值")
-        initialSpirit: Int = 0
+        initialSpirit: UInt = 0u
     ) = commandContext.run command@{
         testPermission()
         testLimit() ?: return@command
@@ -456,14 +456,15 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
         return selected.map { selectList.getOrElse(it - 1) { selectList.random() } }
     }
 
-    private fun distributeValues(values: List<Int>, pointChange: Int = 0): List<Int> {
+    private fun distributeValues(values0: List<UInt>, pointChange: Int = 0): List<Int> {
+        val values = values0.map { it.toInt() }
         val totalSum = values.sum()
-        val maxAttributePoint = GameConfig.maxAttributePoint.toInt() + pointChange
+        val maxAttributePoint = (GameConfig.maxAttributePoint.toInt() + pointChange)
 
         return when {
             totalSum > maxAttributePoint -> {
                 val ratio = maxAttributePoint.toDouble() / totalSum
-                val new = values.map { ((it * ratio).toInt()) }.toMutableList()
+                val new = values.map { (it * ratio).toInt() }.toMutableList()
                 val newSum = new.sum()
                 if (newSum == maxAttributePoint) return new
                 new[new.lastIndex] += (maxAttributePoint - newSum)
@@ -473,11 +474,11 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
             totalSum < 10 -> {
                 distributeValues(
                     listOf(
-                        (0..15).random(),
-                        (0..15).random(),
-                        (0..15).random(),
-                        (0..15).random(),
-                        (0..15).random()
+                        (0u..15u).random(),
+                        (0u..15u).random(),
+                        (0u..15u).random(),
+                        (0u..15u).random(),
+                        (0u..15u).random()
                     )
                 )
             }
