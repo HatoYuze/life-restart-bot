@@ -14,6 +14,7 @@ import com.github.hatoyuze.restarter.mirai.config.CommandLimitData.isUserOverLim
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.Limit.Companion.isNone
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.Limit.Companion.userDailyGamingLimit
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.defaultSpirit
 import com.github.hatoyuze.restarter.mirai.config.GameSaveData
 import net.mamoe.mirai.console.command.CommandContext
 import net.mamoe.mirai.console.command.CompositeCommand
@@ -33,7 +34,8 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
-object RestartLifeCommand : CompositeCommand(PluginMain, "remake",
+object RestartLifeCommand : CompositeCommand(
+    PluginMain, "remake",
     parentPermission = PluginMain.commandPermission
 ) {
 
@@ -42,6 +44,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake",
             throw PermissionDeniedException()
         }
     }
+
     private suspend fun CommandContext.testLimit(): Unit? {
         if (userDailyGamingLimit.isNone()) return Unit
         val user = sender.user ?: return Unit
@@ -107,7 +110,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake",
                 spirit = distribute[4]
                 try {
                     talents = objectTalents
-                } catch (e: IllegalArgumentException) {
+                } catch (_: IllegalArgumentException) {
                     failed = true
                 }
             }
@@ -280,7 +283,7 @@ object RestartLifeCommand : CompositeCommand(PluginMain, "remake",
             spirit = distribute[4]
             try {
                 talents = objectTalents
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 failed = true
             }
         }
@@ -354,17 +357,18 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
             return@command
         }
         val result = buildString {
-            append("""
+            append(
+                """
             |#${event.id}:
             | ⌈${event.eventName}⌋
             | 
             | 触发条件: ${
-                event.include?.chineseDescription() ?: if (event.noRandom) "需要完成事件 ${
-                    UserEvent.values.filter { libEvent -> libEvent.branch.any { it.second == event.id } }
-                        .joinToString(" 或 ") { it.id.toString() }
-                }"
-                else "无条件"
-            }""".trimMargin())
+                    event.include?.chineseDescription() ?: if (event.noRandom) "需要完成事件 ${
+                        UserEvent.values.filter { libEvent -> libEvent.branch.any { it.second == event.id } }
+                            .joinToString(" 或 ") { it.id.toString() }
+                    }"
+                    else "无条件"
+                }""".trimMargin())
             appendLine()
             if (!event.postEvent.isNullOrEmpty()) {
                 append("> ⌈${event.postEvent}⌋")
@@ -456,12 +460,21 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
         return selected.map { selectList.getOrElse(it - 1) { selectList.random() } }
     }
 
+    /**
+     * @param values0 需要最后一个元素为原始分配的快乐值
+     * */
     private fun distributeValues(values0: List<UInt>, pointChange: Int = 0): List<Int> {
-        val values = values0.map { it.toInt() }
+        val enableAssignSprite = defaultSpirit.isNone()
+
+        val values = values0.map { it.toInt() }.toMutableList()
+        if (enableAssignSprite) {
+            values.removeAt(values.lastIndex)
+        }
+
         val totalSum = values.sum()
         val maxAttributePoint = (GameConfig.maxAttributePoint.toInt() + pointChange)
 
-        return when {
+        val assignedValues =  when {
             totalSum > maxAttributePoint -> {
                 val ratio = maxAttributePoint.toDouble() / totalSum
                 val new = values.map { (it * ratio).toInt() }.toMutableList()
@@ -507,5 +520,8 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
 
             else -> values
         }
+        return if (enableAssignSprite) {
+            assignedValues
+        }else assignedValues.plus(defaultSpirit.get())
     }
 }

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.hatoyuze.restarter"
-version = "0.5.1"
+version = "0.5.2"
 
 repositories {
     if (System.getenv("CI")?.toBoolean() != true) {

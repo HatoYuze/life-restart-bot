@@ -75,6 +75,18 @@ object GameConfig : AutoSavePluginConfig("game") {
     @ValueDescription("生成的 JPG 人生模拟器图片压缩质量，越高质量越好，同时用时越久\n值需要大于 0，范围为 0 到 100，默认为 70")
     val jpgQuality: UInt by value(70.toUInt())
 
+    @ValueDescription("默认的快乐值，为 -1 时表示需要调用方提供，反之则总是使用这个值为初始快乐值\n自 0.5.2 以后将默认设置为 5, 不需要调用方提供快乐值")
+    val defaultSpiritPoint: UInt by value(5u)
+
+    val defaultSpirit: Optional<Int> by lazy {
+        if (ResourceManager.isTesting) {
+            return@lazy Optional.of(5)
+        }
+
+        if (defaultSpiritPoint < 0u) Optional.empty<Int>()
+        else Optional.of(defaultSpiritPoint.toInt())
+    }
+
     val quality: Int by lazy {
         if (ResourceManager.isTesting) 70
         else min(jpgQuality.toInt(),100)
