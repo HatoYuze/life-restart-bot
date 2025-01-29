@@ -15,6 +15,12 @@ data class Life(
 ) : ILife {
     constructor() : this(mutableListOf(), Property())
 
+
+    override val highestData: MutableMap<AttributeType, Int>
+        get() =
+            if (isLifeEnd()) property.attribute.highestData
+            else throw NotImplementedError("You shouldn't get 'highestData' from com.github.hatoyuze.restarter.game.entity.impl.Life, because the highest data is still dynamic.")
+
     fun restartLife(attribute: Attribute) {
         property.restartProperty(attribute)
         triggerTalent = ArrayList()

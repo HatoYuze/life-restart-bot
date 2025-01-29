@@ -36,6 +36,7 @@ data class LifeSave(
 ) : ILife {
     @Transient
     val events = events0.map { GlobalEventLibrary[it] ?: error("存档文件中的事件 id=$it 丢失") }
+
     private val attributeStatus by lazy {
         var lastAttribute = LifeAttribute(
             appearance = totalAttributes[APPEARANCE_INDEX],
@@ -49,6 +50,7 @@ data class LifeSave(
             it.inverseApply(lastAttribute).also { lastAttribute = it }
         }.reversed()
     }
+
     private val lifeEventList by lazy {
         val eventChain = mutableListOf<UserEvent>()
         val expectBranchEvent = mutableListOf<Int>()
@@ -181,6 +183,16 @@ data class LifeSave(
                 )
             )
         }
+
+    // need better implementation
+    override val highestData: MutableMap<AttributeType, Int> = mutableMapOf<AttributeType, Int>(
+        CHR to attributeStatus.maxOf { it.appearance },
+        INT to attributeStatus.maxOf { it.intelligent },
+        STR to attributeStatus.maxOf { it.strength },
+        MNY to attributeStatus.maxOf { it.money },
+        SPR to attributeStatus.maxOf { it.spirit },
+        AGE to attributeStatus.lastIndex // age is based-zero
+    )
 
     private fun reset() {
         internalIterator0 = lifeEventList.listIterator()

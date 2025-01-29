@@ -18,21 +18,31 @@ enum class AttributeType(val chineseDesc: String) {
     AET("上一个事件的 id"),  //前一个事件
 }
 
-//
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+@Retention(AnnotationRetention.BINARY)
+private annotation class ProtectedSetter
 
 @Serializable
 data class Attribute @JvmOverloads constructor(
-    var age: Int = -1, // 年龄
-    var appearance: Int = 5, // 颜值 U+1F60E
-    var intelligent: Int = 5, // 智力 🧠 U+1F9E0
-    var strength: Int = 5, // 体质 💪 U+1F4AA
-    var money: Int = 5, // 家境 💵 U+1F4B5
-    var spirit: Int = 5, // 快乐 🥰 U+1F970
-    var lifeAge: Int = 1, // 生命 ❤️ U+2764
-    var tms: Int = 0,
-    var talents: MutableList<Int> = mutableListOf(),
-    var events: MutableList<Int> = mutableListOf(),
-    var additionAttr: Int = 0
+    @set:ProtectedSetter var age: Int = -1, // 年龄
+    @set:ProtectedSetter var appearance: Int = 5, // 颜值 U+1F60E
+    @set:ProtectedSetter var intelligent: Int = 5, // 智力 🧠 U+1F9E0
+    @set:ProtectedSetter var strength: Int = 5, // 体质 💪 U+1F4AA
+    @set:ProtectedSetter var money: Int = 5, // 家境 💵 U+1F4B5
+    @set:ProtectedSetter var spirit: Int = 5, // 快乐 🥰 U+1F970
+    @set:ProtectedSetter var lifeAge: Int = 1, // 生命 ❤️ U+2764
+    @set:ProtectedSetter var tms: Int = 0,
+    val talents: MutableList<Int> = mutableListOf(),
+    val events: MutableList<Int> = mutableListOf(),
+    @set:ProtectedSetter var additionAttr: Int = 0,
+    val highestData: MutableMap<AttributeType, Int> =
+        mutableMapOf<AttributeType, Int>(
+            AttributeType.CHR to appearance,
+            AttributeType.INT to intelligent,
+            AttributeType.STR to strength,
+            AttributeType.MNY to money,
+            AttributeType.SPR to spirit,
+        )
 ) {
 
     fun getPropInteger(prop: AttributeType): Int = when (prop) {
@@ -66,23 +76,24 @@ data class Attribute @JvmOverloads constructor(
         else -> ArrayList()
     }
 
+    @OptIn(ProtectedSetter::class)
     operator fun AttributeType.plusAssign(value: Int) {
         when (this) {
-            AttributeType.AGE -> age += value
-            AttributeType.CHR -> appearance += value
-            AttributeType.INT -> intelligent += value
-            AttributeType.STR -> strength += value
-            AttributeType.MNY -> money += value
-            AttributeType.SPR -> spirit += value
-            AttributeType.LIF -> lifeAge += value
+            AttributeType.AGE -> age = (age + value).checkHigher(this, highestData)
+            AttributeType.CHR -> appearance = (appearance + value).checkHigher(this, highestData)
+            AttributeType.INT -> intelligent = (intelligent + value).checkHigher(this, highestData)
+            AttributeType.STR -> strength = (strength + value).checkHigher(this, highestData)
+            AttributeType.MNY -> money = (money + value).checkHigher(this, highestData)
+            AttributeType.SPR -> spirit = (spirit + value).checkHigher(this, highestData)
+            AttributeType.LIF -> lifeAge = lifeAge + value
             AttributeType.RDM -> repeat(value) {
                 val randomNumber = (Math.random() * 5).toInt()
                 when (randomNumber) {
-                    0 -> appearance += 1
-                    1 -> intelligent += 1
-                    2 -> strength += 1
-                    3 -> money += 1
-                    4 -> spirit += 1
+                    0 -> appearance = (appearance + 1).checkHigher(this, highestData)
+                    1 -> intelligent = (intelligent + 1).checkHigher(this, highestData)
+                    2 -> strength = (strength + 1).checkHigher(this, highestData)
+                    3 -> money = (money + 1).checkHigher(this, highestData)
+                    4 -> spirit = (spirit + 1).checkHigher(this, highestData)
                 }
             }
 
@@ -159,7 +170,11 @@ data class Attribute @JvmOverloads constructor(
 
     val sumSummary: Judgement
         get() {
-            val sum = spirit * 2 + age / 2
+            // https://github.com/VickScarlet/lifeRestart/blob/master/src/modules/property.js#L198
+            val sum =
+                (highestData.chr + highestData.int + highestData.str + highestData.mny + highestData.spr) * 2 +
+                    highestData.age / 2
+
             return when {
                 sum >= 120 -> Judgement(3, sum, "传说")
                 sum >= 110 -> Judgement(3, sum, "逆天")
@@ -205,4 +220,25 @@ data class Attribute @JvmOverloads constructor(
         } else {
             Judgement(0, spirit, "地狱")
         }
+
+    companion object {
+        private fun Int.checkHigher(type: AttributeType, highestMap: MutableMap<AttributeType, Int>) = this.apply {
+            if ((highestMap[type] ?: 0) < this) {
+                highestMap[type] = this
+            }
+        }
+
+        val MutableMap<AttributeType, Int>.chr: Int
+            get() = this[AttributeType.CHR] ?: 0
+        val MutableMap<AttributeType, Int>.int: Int
+            get() = this[AttributeType.INT] ?: 0
+        val MutableMap<AttributeType, Int>.str: Int
+            get() = this[AttributeType.STR] ?: 0
+        val MutableMap<AttributeType, Int>.mny: Int
+            get() = this[AttributeType.MNY] ?: 0
+        val MutableMap<AttributeType, Int>.spr: Int
+            get() = this[AttributeType.SPR] ?: 0
+        val MutableMap<AttributeType, Int>.age: Int
+            get() = this[AttributeType.AGE] ?: 0
+    }
 }

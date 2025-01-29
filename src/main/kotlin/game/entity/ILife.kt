@@ -13,4 +13,5 @@ interface ILife : Iterator<ExecutedEvent>, Sequence<ExecutedEvent> {
             is LifeSave -> talents0.map { Talent.data[it] ?: error("天赋 $it 丢失") }
             else -> error("Unsupported talents object")
         }
+    val highestData: MutableMap<AttributeType, Int>
 }
