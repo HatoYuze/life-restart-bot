@@ -71,7 +71,7 @@ data class Talent @JvmOverloads constructor(
                     // *n 表示总计算作有 n 份
                     val id = talent
                         .associate {
-                            if (it.isString) {
+                            if (it.isString && it.content.any { !it.isDigit() }) {
                                 val content = it.content
                                 val point = content.indexOf('*')
                                 content.substring(0, point).toInt() to it.content.substring(point + 1).toDouble()
