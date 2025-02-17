@@ -5,6 +5,7 @@ import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
 import com.github.hatoyuze.restarter.game.data.UserEvent.Data.ofEvent
 import com.github.hatoyuze.restarter.game.entity.*
+import com.github.hatoyuze.restarter.game.entity.ILife.Companion.talentManager
 import kotlinx.serialization.Serializable
 import com.github.hatoyuze.restarter.game.data.UserEvent.Data as GlobalEventLibrary
 
@@ -34,7 +35,7 @@ data class Life(
         val resultTalents = mutableListOf<Talent>()
         val talentsList = getUnfinishedTalent()
         talentsList.forEach { value ->
-            val talent = TalentManager.talentTakeEffect(value, property.attribute) ?: return@forEach
+            val talent = talentManager.talentTakeEffect(value, property.attribute) ?: return@forEach
             resultTalents.add(talent)
             talent.let {
                 triggerTalent.add(value)

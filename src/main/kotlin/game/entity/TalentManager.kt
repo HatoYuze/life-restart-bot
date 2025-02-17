@@ -1,7 +1,6 @@
 package com.github.hatoyuze.restarter.game.entity
 
 import com.github.hatoyuze.restarter.game.data.Talent
-import kotlin.math.floor
 import com.github.hatoyuze.restarter.game.data.Talent.Companion.data as talentHashMap
 
 interface ITalentManager {
@@ -13,8 +12,9 @@ interface ITalentManager {
 
     /**
      * 随机抽取天赋
+     * @param excludeIds 不会被抽中的 天赋
      * */
-    fun talentRandom(listSize: Int): List<Talent>
+    fun talentRandom(listSize: Int, excludeIds: Set<Int> = emptySet()): List<Talent>
 
     companion object {
         val INSTANCE = TalentManager
@@ -22,56 +22,78 @@ interface ITalentManager {
 }
 
 
-object TalentManager : ITalentManager {
-    private const val PERCENT_GRADE_3: Double = 0.1
-    private const val PERCENT_GRADE_2: Double = 0.2
-    private const val PERCENT_GRADE_1: Double = 0.333
+abstract class TalentManager : ITalentManager {
+    abstract val percentageGrade3: Double
+    abstract val percentageGrade2: Double
+    abstract val percentageGrade1: Double
 
     override fun talentTakeEffect(talentId: Int, property: Attribute): Talent? {
         val talent = talentHashMap[talentId] ?: return null
-        if (talent.condition == null) { // 无条件
-            return talent
-        }
-        return talent.condition.let {
-            if (!it.judgeAll(property)) null
-            else talent
-        }
+        return talent.takeIf { talent.condition?.judgeAll(property) != false }
     }
 
-    // won't show talentHashMap.
     override fun toString(): String {
         return "TalentManager {" +
-            "percentageGrade3=" + PERCENT_GRADE_3 +
-            ", percentageGrade2=" + PERCENT_GRADE_2 +
-            ", percentageGrade1=" + PERCENT_GRADE_1 +
-            '}'
+            "percentageGrade3=$percentageGrade3" +
+            ", percentageGrade2=$percentageGrade2" +
+            ", percentageGrade1=$percentageGrade1" +
+            "}"
     }
 
-    override fun talentRandom(listSize: Int): List<Talent> {
-        val talentList: MutableList<Talent> = ArrayList()
-        val talentClassedByGrade = HashMap<Int, MutableList<Talent>>()
-        for (i in 0..3) talentClassedByGrade[i] = ArrayList()
-        val iterator: Iterator<*> = talentHashMap.keys.iterator()
-        while (iterator.hasNext()) {
-            val key = iterator.next() as Int
-            val value = talentHashMap[key] ?: continue
-            talentClassedByGrade[value.grade]!!.add(value)
+    override fun talentRandom(listSize: Int, excludeIds: Set<Int>): List<Talent> {
+        val talentList = mutableListOf<Talent>()
+        val talentClassedByGrade = (0..3).associateWithTo(mutableMapOf()) { grade ->
+            talentHashMap.values
+                .filter { it.grade == grade && it.id !in excludeIds }
+                .toMutableList()
         }
-        for (i in 0 until listSize) {
-            var grade: Int
-            val gradeRandom = Math.random()
-            grade = when {
-                gradeRandom <= PERCENT_GRADE_3 -> 3
-                gradeRandom <= PERCENT_GRADE_2 -> 2
-                gradeRandom <= PERCENT_GRADE_1 -> 1
-                else -> 0
-            }
-            val len = talentClassedByGrade[grade]!!.size
-            val talentRandom = floor(len * Math.random()).toInt() % len
 
-            talentList.add(talentClassedByGrade[grade]!![talentRandom])
-            talentClassedByGrade[grade]!!.removeAt(talentRandom)
+        repeat(listSize) {
+            val availableGrades = (3 downTo 0).filter { grade ->
+                talentClassedByGrade[grade]?.isNotEmpty() == true
+            }
+            if (availableGrades.isEmpty()) return@repeat
+
+            val cumulativeProb = mutableListOf<Pair<Int, Double>>().apply {
+                var cumulative = 0.0
+                val totalProb = availableGrades.sumOf { getGradeProbability(it) }
+                availableGrades.forEach { grade ->
+                    val prob = getGradeProbability(grade) / totalProb
+                    cumulative += prob
+                    add(grade to cumulative)
+                }
+            }
+
+            val random = Math.random()
+            val selectedGrade = cumulativeProb.find { (_, prob) -> random <= prob }?.first
+                ?: availableGrades.last()
+
+            talentClassedByGrade[selectedGrade]?.let { talents ->
+                talents.removeAt((Math.random() * talents.size).toInt()).also { talentList.add(it) }
+            }
         }
+
         return talentList
     }
+
+    private fun getGradeProbability(grade: Int): Double = when (grade) {
+        3 -> percentageGrade3
+        2 -> percentageGrade2
+        1 -> percentageGrade1
+        0 -> 1 - (percentageGrade1 + percentageGrade2 + percentageGrade3)
+        else -> 0.0
+    }
+
+    companion object: TalentManager() {
+        override val percentageGrade3: Double = 0.1
+        override val percentageGrade2: Double = 0.2
+        override val percentageGrade1: Double = 0.333
+    }
 }
+
+
+data class CustomizedTalentManager(
+    override val percentageGrade3: Double,
+    override val percentageGrade2: Double,
+    override val percentageGrade1: Double
+) : TalentManager()

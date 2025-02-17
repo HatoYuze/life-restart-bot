@@ -1,5 +1,8 @@
 package com.github.hatoyuze.restarter.mirai.config
 
+import com.github.hatoyuze.restarter.game.entity.CustomizedTalentManager
+import com.github.hatoyuze.restarter.game.entity.ITalentManager
+import com.github.hatoyuze.restarter.game.entity.TalentManager
 import com.github.hatoyuze.restarter.mirai.ResourceManager
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
@@ -77,6 +80,42 @@ object GameConfig : AutoSavePluginConfig("game") {
 
     @ValueDescription("默认的快乐值，为 -1 时表示需要调用方提供，反之则总是使用这个值为初始快乐值\n自 0.5.2 以后将默认设置为 5, 不需要调用方提供快乐值")
     val defaultSpiritPoint: UInt by value(5u)
+
+    // private const val percentageGrade3: Double = 0.1
+    //    private const val percentageGrade2: Double = 0.2
+    //    private const val PERCENT_GRADE_1: Double = 0.333
+    @Serializable
+    data class TalentPoolSetting(
+        val excludeIds: List<Int>,
+        val prob1: Double = 0.333,
+        val prob2: Double = 0.2,
+        val prob3: Double = 0.1,
+    ) {
+        init {
+            require(prob1 + prob2 + prob3 <= 1.0) { "天赋等级的概率不能为大于 1 的数" }
+        }
+
+        fun ofTalentManger() =
+            CustomizedTalentManager(prob1,prob2,prob3)
+    }
+
+
+    @ValueDescription("天赋池设定\n" +
+        " excludeIds - 始终不会被再次抽中的天赋\n" +
+        " prob1 - 天赋等级为 1 (蓝色) 的出现概率\n" +
+        " prob2 - 天赋等级为 2 (红色) 的出现概率\n" +
+        " prob3 - 天赋等级为 3 (紫色) 的出现概率\n" +
+        " 注： 上述概率之和不可大于 1, 白色天赋出现概率为 1 减去上述数据之和")
+    val talentsPool: TalentPoolSetting by value(TalentPoolSetting(listOf(2032)))
+
+
+    val usingTalentManager: ITalentManager by lazy {
+        if (ResourceManager.isTesting) {
+            return@lazy TalentManager
+        }
+        return@lazy talentsPool.ofTalentManger()
+    }
+
 
     val defaultSpirit: Optional<Int> by lazy {
         if (ResourceManager.isTesting) {

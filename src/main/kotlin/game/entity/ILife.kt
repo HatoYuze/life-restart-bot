@@ -3,6 +3,7 @@ package com.github.hatoyuze.restarter.game.entity
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.entity.impl.Life
 import com.github.hatoyuze.restarter.game.entity.impl.LifeSave
+import com.github.hatoyuze.restarter.mirai.config.GameConfig
 
 interface ILife : Iterator<ExecutedEvent>, Sequence<ExecutedEvent> {
     fun isLifeEnd(): Boolean
@@ -14,4 +15,8 @@ interface ILife : Iterator<ExecutedEvent>, Sequence<ExecutedEvent> {
             else -> error("Unsupported talents object")
         }
     val highestData: MutableMap<AttributeType, Int>
+
+    companion object {
+        val talentManager = GameConfig.usingTalentManager
+    }
 }

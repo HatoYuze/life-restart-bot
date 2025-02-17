@@ -2,7 +2,7 @@ package com.github.hatoyuze.restarter.game
 
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.entity.Attribute
-import com.github.hatoyuze.restarter.game.entity.TalentManager
+import com.github.hatoyuze.restarter.game.entity.ILife.Companion.talentManager
 import com.github.hatoyuze.restarter.game.entity.impl.Life
 import com.github.hatoyuze.restarter.mirai.config.GameSaveData
 import net.mamoe.mirai.console.command.CommandContext
@@ -64,7 +64,7 @@ class LifeEngine(initial: LifeEngineBuilder) : Sequence<LifeEvent> {
 
     companion object {
 
-        fun randomTalent(): List<Talent> = TalentManager.talentRandom(10)
+        fun randomTalent(): List<Talent> = talentManager.talentRandom(10)
 
     }
 
