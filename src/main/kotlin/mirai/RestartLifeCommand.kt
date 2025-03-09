@@ -125,10 +125,17 @@ object RestartLifeCommand : CompositeCommand(
                 println(lifeList.joinToString { "${it.property.lifeAge}岁: ${it.name}" })
                 return@command
             }
-            val image = GameLayoutDrawer.createGamingImage(engine.life).toExternalResource().use {
-                subject.uploadImage(it)
+            val images = GameLayoutDrawer.createGamingImage(engine.life).map {
+                it.toExternalResource().use { res->
+                    subject.uploadImage(res)
+                }
             }
+
             quote(buildMessageChain {
+                images.onEach { image ->
+                    +image
+                }
+
                 +buildString {
                     appendLine("游戏结算：")
                     with(engine.ratingStatus) {
@@ -140,7 +147,7 @@ object RestartLifeCommand : CompositeCommand(
                         appendLine("总分：${sum.value} ${sum.judge}")
                     }
                 }
-                +image
+
             })
             GameSaveData.save(engine.life, sender.user)
         }
@@ -225,12 +232,16 @@ object RestartLifeCommand : CompositeCommand(
                 return@command
             }
             val content = data.content
-            val image = GameLayoutDrawer.createGamingImage(content).toExternalResource().use {
-                subject.uploadImage(it)
+            val images = GameLayoutDrawer.createGamingImage(content).map {
+                it.toExternalResource().use { res ->
+                    subject.uploadImage(res)
+                }
             }
 
             quote(buildMessageChain {
-                +image
+                images.onEach { image ->
+                    +image
+                }
                 with(content.property.attribute) {
                     appendLine("Ta 的人生模拟器评分：")
                     appendLine("颜值：${appearanceSummary.value} ${appearanceSummary.judge}")

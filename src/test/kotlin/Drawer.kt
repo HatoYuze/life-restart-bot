@@ -35,12 +35,12 @@ class Drawer {
     }
 
     @Test
-    fun performanceTesting() = runBlocking{
+    fun performanceTesting() = runBlocking {
         TestGame().data()
         val gameSave = json.decodeFromString<LifeSave>(RUNTIME_SAVE_JSON)
 
-        val list = mutableListOf(0L,0L,0L,0L,0L,0L,0L,0L,0L,0L,)
-        repeat(10) {times ->
+        val list = mutableListOf(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L)
+        repeat(10) { times ->
             measureTimeMillis {
                 for (i in 0..50) {
                     GameLayoutDrawer.createGamingImage(gameSave)
@@ -57,32 +57,32 @@ class Drawer {
     }
 
     @Test
-    fun game() = runBlocking{
+    fun game() = runBlocking {
         TestGame().data()
         TalentManager.talentRandom(3).map { it.id }.toMutableList()
         val life = Life()
         life.restartLife(
             Attribute(
                 -1,
-                3,4,5,6,2,
+                13, 14, 15, 16, 12,
                 1,
-                talents = mutableListOf(1049, 1050, 1141)
+                talents = mutableListOf(1048, 1147, 1141)
             )
 
         )
 
         measureTimeMillis {
             GameLayoutDrawer.createGamingImage(life).also {
-                println(it.absolutePath)
+                println(it.joinToString { it.absolutePath })
             }
 
             val lifeSave = LifeSave.translate(life)
             println(json.encodeToString(lifeSave))
             GameLayoutDrawer.createGamingImage(lifeSave).also {
-                println(it.absolutePath)
+                println(it.joinToString { it.absolutePath })
             }
             GameLayoutDrawer.createGamingImage(lifeSave).also {
-                println(it.absolutePath)
+                println(it.joinToString { it.absolutePath })
             }
         }.also {
             println("Drawing used $it ms")

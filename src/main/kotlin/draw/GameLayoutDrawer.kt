@@ -25,12 +25,14 @@ object GameLayoutDrawer {
         }
     }
 
-    suspend fun createGamingImage(life: ILife): File {
-        val surface = GameProgressLayoutDrawer(font, life).draw()
-        return newCacheFile("life-${life.hashCode()}.jpg").also {
-            val code = surface.makeImageSnapshot().encodeToData(EncodedImageFormat.JPEG, quality) ?: error("无法渲染图片！")
-            withContext(Dispatchers.IO) {
-                it.writeBytes(code.bytes)
+    suspend fun createGamingImage(life: ILife): List<File> {
+        return withContext(Dispatchers.IO) {
+            val surface = GameProgressLayoutDrawer(font, life, this).draw()
+            surface.mapIndexed { i,surface ->
+                newCacheFile("life-${life.hashCode()}.$i.jpg").also {
+                    val code = surface.makeImageSnapshot().encodeToData(EncodedImageFormat.JPEG, quality) ?: error("无法渲染图片！")
+                    it.writeBytes(code.bytes)
+                }
             }
         }
     }
