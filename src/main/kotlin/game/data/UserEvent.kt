@@ -1,5 +1,6 @@
 package com.github.hatoyuze.restarter.game.data
 
+import com.github.hatoyuze.restarter.game.data.SimpleConditionExpression.Requirement.GREATER
 import com.github.hatoyuze.restarter.game.data.UserEvent.Data.TALENT_EVENT_CODE
 import com.github.hatoyuze.restarter.game.data.serialization.ConditionExpressionSerializer
 import com.github.hatoyuze.restarter.game.data.serialization.ReferEventId
@@ -53,12 +54,25 @@ data class UserEvent @JvmOverloads constructor(
     }
 
     companion object Data {
+        internal const val REPLACEABLE_EVENT_ID = 30003
+
         internal val data: MutableMap<Int, UserEvent> by lazy {
             val jsonContent = ResourceManager.getResource("data/events.json") ?: error("Can not find resources: events")
             val json = Json {
                 ignoreUnknownKeys = true
             }
             json.decodeFromString<Map<String, UserEvent>>(jsonContent).mapKeys { it.key.toInt() }.toMutableMap()
+                .apply {
+                    this[REPLACEABLE_EVENT_ID] = UserEvent(
+                        id = REPLACEABLE_EVENT_ID,
+                        eventName = "你偶然间发现地平线竟然出现了无端的黑块...\\n你想要逃、   跑...\\n远在你动身前，世界崩塌了。",
+                        noRandom = true,
+                        grade = 2,
+                        branch = listOf(
+                            SimpleConditionExpression(AttributeType.STR, GREATER, listOf(Int.MIN_VALUE)) to 10000
+                        )
+                    )
+                }
         }
         val values = data.values
         val keys = data.keys

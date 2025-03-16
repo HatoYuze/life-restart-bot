@@ -101,6 +101,7 @@ data class LifeSave(
                 execute(index, event)
                 judgeTail(index, event)
             }
+            // 用于存储最后一项事件，如果最后一个事件不是 `10000 你死了` 将会报错
             add(ExecutedEvent(eventChain.first(), eventChain.drop(1), attributeStatus.last()))
         }
     }
@@ -148,6 +149,7 @@ data class LifeSave(
                 }
             }
             return with(life.property.attribute) {
+                println("events: "+events.size)
                 LifeSave(
                     score = sumSummary.value,
                     totalAge = age,

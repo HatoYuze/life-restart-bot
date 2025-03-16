@@ -97,27 +97,41 @@ data class Life(
     }
 
     private fun randomUserEvent(ageUserEvent: AgeSupportEvents): Int {
+
         val events = ageUserEvent.events
-        val validEvents = events.filter { entry -> checkUserEvent(entry.key) }
+        val validEvents = events
+            .filter { entry -> checkUserEvent(entry.key) }
             .mapValues { entry -> entry.value }
 
         if (validEvents.isEmpty()) {
             // 没有可继续的事件，强制死亡
-            return 30003
+            return UserEvent.REPLACEABLE_EVENT_ID
         }
+        fun randomEvent(): Int {
+            val totalWeight = validEvents.values.sum()
+            val randomCut = totalWeight * Math.random()
 
-        val totalWeight = validEvents.values.sum()
-        val randomCut = totalWeight * Math.random()
+            var cumulativeWeight = 0.0
+            for ((key, weight) in validEvents) {
+                cumulativeWeight += weight
+                if (randomCut <= cumulativeWeight) {
+                    return key
+                }
+            }
 
-        var cumulativeWeight = 0.0
-        for ((key, weight) in validEvents) {
-            cumulativeWeight += weight
-            if (randomCut <= cumulativeWeight) {
-                return key
+            return validEvents.keys.last()
+        }
+        var eventResult = randomEvent()
+
+        if (property.attribute.age < 100 && eventResult in property.attribute.events) {
+            for (i in 0 until 3) {
+                if (eventResult !in property.attribute.events) {
+                    break
+                }
+                eventResult = randomEvent()
             }
         }
-
-        return validEvents.keys.last()
+        return eventResult
     }
 
     private fun checkUserEvent(userEventId: Int): Boolean {

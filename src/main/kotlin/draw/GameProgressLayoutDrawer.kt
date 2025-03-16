@@ -34,7 +34,7 @@ class GameProgressLayoutDrawer(
 
     private val textLineHeight by lazy { defaultFont.measureText("你出生了。").let { it.bottom - it.top } }
     private val textWeight = defaultFont.measureTextWidth("第 500 岁 ")
-    private val surface by lazy {
+    private val topSurface by lazy {
         val topLife = pagedLife.first()
         fun getLifeLines(): Int = topLife.sumOf { it.linesCount() }
         Surface.makeRasterN32Premul(
@@ -46,7 +46,7 @@ class GameProgressLayoutDrawer(
 
     private val life = life0.toList().map { it.warpString() }
     private val pagedLife = if (life.size > 105) life.chunked(101) else listOf(life)
-    private val canvas = surface.canvas
+    private val topCanvas = topSurface.canvas
     private var lastY = INIT_EVENT_MESSAGE_Y
 
     private val globalToDrawAttributes = mutableMapOf<Float, LifeAttribute>()
@@ -57,14 +57,9 @@ class GameProgressLayoutDrawer(
     }
 
     private fun drawBackground(surface: Surface, initTop: Float = INIT_EVENT_MESSAGE_Y) {
-        val paint = Paint {
-            color4f = Color4f(BACKGROUND_COLOR4F)
-        }
-        val rect = Rect.makeWH(surface.width.toFloat(), surface.height.toFloat())
-        surface.canvas.drawRect(rect, paint)
+        surface.canvas.clear(BACKGROUND_COLOR4F)
 
-        paint.color4f = Color4f(EVENT_BACKGROUND_COLOR4F)
-        canvas.drawRRectWithEdge(
+        surface.canvas.drawRRectWithEdge(
             backgroundColor4f = Color4f(EVENT_BACKGROUND_COLOR4F),
             rRect = makeXYWH(
                 30f,
@@ -77,21 +72,25 @@ class GameProgressLayoutDrawer(
     }
 
     private fun drawTitle() {
-        surface.drawStringCentral("人生模拟器", titleFont, 75f, paint)
+        val paint = Paint {
+            color = Color.WHITE
+            isAntiAlias = true
+        }
+        topSurface.drawStringCentral("人生模拟器", titleFont, 75f, paint)
         paint.strokeWidth = 5f
         paint.mode = PaintMode.FILL
 
-        canvas.drawLine(50f, 75f + 15f, 1000f - 50f, 75f + 15f, paint)
+        topCanvas.drawLine(50f, 75f + 15f, 1000f - 50f, 75f + 15f, paint)
         paint.strokeWidth = 0f
     }
 
     private fun drawSelectedTalent() {
         val drawer = TalentLayoutDrawer(
-            surface, font0, life0.talents, surfaceRange = Point(1000f, 1034f)
+            topSurface, font0, life0.talents, surfaceRange = Point(1000f, 1034f)
         )
         var y = 80f
 
-        surface.drawStringCentral("天赋列表", subTitleFont, 130f, paint)
+        topSurface.drawStringCentral("天赋列表", subTitleFont, 130f, paint)
 
         life0.talents.onEach { talent ->
             y += drawer.boxHeight + 20
@@ -100,7 +99,7 @@ class GameProgressLayoutDrawer(
     }
 
     suspend fun draw(): List<Surface> {
-        drawBackground(surface)
+        drawBackground(topSurface)
         drawTitle()
         drawSelectedTalent()
 
@@ -112,7 +111,7 @@ class GameProgressLayoutDrawer(
                 results.add(
                     EventDrawer(
                         rangedLife = pagedElement,
-                        localSurface = surface,
+                        localSurface = topSurface,
                         coroutineScope = coroutineScope,
                         drawingY = lastY,
                         enableCoverBackground = false,

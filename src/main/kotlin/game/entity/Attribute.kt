@@ -98,7 +98,7 @@ data class Attribute @JvmOverloads constructor(
             }
 
             AttributeType.EVT -> {
-                if (value != -1 && !includeEvent(value)) events.add(value)
+                if (value != -1) events.add(value)
             }
 
             AttributeType.TLT -> if (value != -1 && !includeTalent(value)) talents.add(value)
@@ -107,7 +107,6 @@ data class Attribute @JvmOverloads constructor(
         }
     }
 
-    fun includeEvent(eventId: Int): Boolean = eventId in events
     fun includeTalent(talentId: Int): Boolean = talentId in talents
     fun isEnd(): Boolean = lifeAge <= 0
 
