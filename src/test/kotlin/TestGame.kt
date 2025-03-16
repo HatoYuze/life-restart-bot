@@ -1,6 +1,6 @@
 package com.github.hatoyuze.restarter
 
-import com.github.hatoyuze.restarter.game.LifeEngine
+import com.github.hatoyuze.restarter.game.*
 import com.github.hatoyuze.restarter.game.data.AgeSupportEvents
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
@@ -116,7 +116,7 @@ class TestGame {
             }
 
             println()
-            with(engine.ratingStatus) {
+            with(engine.ratingSummary) {
                 println("颜值：${appearance.value} ${appearance.judge}")
                 println("家境：${money.value} ${money.judge}")
                 println("乐观：${spirit.value} ${spirit.judge}")

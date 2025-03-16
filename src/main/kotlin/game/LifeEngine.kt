@@ -44,21 +44,11 @@ class LifeEngine(initial: LifeEngineBuilder) : Sequence<LifeEvent> {
         life.restartLife(attr)
     }
 
-    val ratingStatus by lazy {
+    val ratingSummary by lazy {
         require(!this.iterator.hasNext()) {
             "未完成推演无法进行评分"
         }
-        with(life.property.attribute) {
-            RatingStatus(
-                appearanceSummary,
-                moneySummary,
-                spiritSummary,
-                intelligentSummary,
-                strengthSummary,
-                ageSummary,
-                sumSummary
-            )
-        }
+        life.property.attribute as IRatingStatus
     }
 
 

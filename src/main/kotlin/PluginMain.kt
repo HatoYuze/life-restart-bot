@@ -24,7 +24,7 @@ object PluginMain : KotlinPlugin(
     JvmPluginDescription(
         id = "com.github.hatoyuze.restarter.life-restarter",
         name = "LifeRestarter",
-        version = "0.5.1"
+        version = "0.6.0"
     ) {
         author("HatoYuze")
         info("""人生重开器.""".trimIndent())
@@ -77,7 +77,7 @@ object PluginMain : KotlinPlugin(
 
     override fun onDisable() {
         var i = 0
-        File(GameConfig.cachePath.ifNull(PluginMain.dataFolderPath.pathString)).listFiles()?.onEach {
+        File(GameConfig.cachePath.ifNull(dataFolderPath.pathString)).listFiles()?.onEach {
             if (!(it.name.endsWith("png") || it.name.endsWith("jpg")))
                 return@onEach
 

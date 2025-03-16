@@ -6,6 +6,7 @@ import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.maxGrad
 import com.github.hatoyuze.restarter.game.entity.ExecutedEvent.Companion.showPostEvent
 import com.github.hatoyuze.restarter.game.entity.ILife
 import com.github.hatoyuze.restarter.game.entity.LifeAttribute
+import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -45,7 +46,7 @@ class GameProgressLayoutDrawer(
 
 
     private val life = life0.toList().map { it.warpString() }
-    private val pagedLife = if (life.size > 105) life.chunked(101) else listOf(life)
+    private val pagedLife = if (life.size > 105 && GameConfig.isPaginatedEnable) life.chunked(101) else listOf(life)
     private val topCanvas = topSurface.canvas
     private var lastY = INIT_EVENT_MESSAGE_Y
 

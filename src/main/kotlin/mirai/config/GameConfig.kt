@@ -81,9 +81,6 @@ object GameConfig : AutoSavePluginConfig("game") {
     @ValueDescription("默认的快乐值，为 -1 时表示需要调用方提供，反之则总是使用这个值为初始快乐值\n自 0.5.2 以后将默认设置为 5, 不需要调用方提供快乐值")
     val defaultSpiritPoint: UInt by value(5u)
 
-    // private const val percentageGrade3: Double = 0.1
-    //    private const val percentageGrade2: Double = 0.2
-    //    private const val PERCENT_GRADE_1: Double = 0.333
     @Serializable
     data class TalentPoolSetting(
         val excludeIds: List<Int>,
@@ -108,6 +105,25 @@ object GameConfig : AutoSavePluginConfig("game") {
         " 注： 上述概率之和不可大于 1, 白色天赋出现概率为 1 减去上述数据之和")
     val talentsPool: TalentPoolSetting by value(TalentPoolSetting(listOf(2032)))
 
+    enum class PaginatedSendingWays {
+        NEVER_PAGINATED,
+        FORWARDING,
+        FOLLOWING
+    }
+
+    @ValueDescription("分页绘图设定，可选以下值\n" +
+        " NEVER_PAGINATED - 从不进行分页 (不推荐，可能会导致无法分配内存/发出信息)\n" +
+        " FORWARDING - 将分页绘制后的图片装入“合并转发信息”发送\n" +
+        " FOLLOWING - 直接将分页后的多个图片放进同一张图片中")
+    val paginatedSetting: PaginatedSendingWays by value(PaginatedSendingWays.FOLLOWING)
+
+
+
+    // ////////////////////////////////////////////////
+    // //////////// Resolved Attributes  //////////////
+    // ///////////////////////////////////////////////
+
+    val isPaginatedEnable get() = paginatedSetting != PaginatedSendingWays.NEVER_PAGINATED
 
     val usingTalentManager: ITalentManager by lazy {
         if (ResourceManager.isTesting) {

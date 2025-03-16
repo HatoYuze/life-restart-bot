@@ -1,5 +1,6 @@
 package com.github.hatoyuze.restarter.game.entity
 
+import com.github.hatoyuze.restarter.game.IRatingStatus
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -43,7 +44,7 @@ data class Attribute @JvmOverloads constructor(
             AttributeType.MNY to money,
             AttributeType.SPR to spirit,
         )
-) {
+): IRatingStatus {
 
     fun getPropInteger(prop: AttributeType): Int = when (prop) {
         AttributeType.AGE -> age
@@ -110,7 +111,7 @@ data class Attribute @JvmOverloads constructor(
     fun includeTalent(talentId: Int): Boolean = talentId in talents
     fun isEnd(): Boolean = lifeAge <= 0
 
-    val appearanceSummary: Judgement
+    override val appearanceSummary: Judgement
         get() = when {
             appearance >= 11 -> Judgement(3, appearance, "逆天")
             appearance >= 9 -> Judgement(2, appearance, "罕见")
@@ -121,7 +122,7 @@ data class Attribute @JvmOverloads constructor(
             else -> Judgement(0, appearance, "地狱")
         }
 
-    val intelligentSummary: Judgement
+    override val intelligentSummary: Judgement
         get() = when {
             intelligent >= 501 -> Judgement(3, intelligent, "仙魂")
             intelligent >= 131 -> Judgement(3, intelligent, "元神")
@@ -135,7 +136,7 @@ data class Attribute @JvmOverloads constructor(
             else -> Judgement(0, intelligent, "地狱")
         }
 
-    val strengthSummary: Judgement
+    override val strengthSummary: Judgement
         get() = when {
             strength >= 2001 -> Judgement(3, strength, "仙体")
             strength >= 1001 -> Judgement(3, strength, "元婴")
@@ -151,7 +152,7 @@ data class Attribute @JvmOverloads constructor(
             else -> Judgement(0, strength, "地狱")
         }
 
-    val ageSummary: Judgement
+    override val ageSummary: Judgement
         get() = when {
             age >= 500 -> Judgement(3, age, "仙寿")
             age >= 100 -> Judgement(3, age, "修仙")
@@ -167,7 +168,7 @@ data class Attribute @JvmOverloads constructor(
             else -> Judgement(0, age, "胎死腹中")
         }
 
-    val sumSummary: Judgement
+    override val sumSummary: Judgement
         get() {
             // https://github.com/VickScarlet/lifeRestart/blob/master/src/modules/property.js#L198
             val sum =
@@ -186,7 +187,7 @@ data class Attribute @JvmOverloads constructor(
             }
         }
 
-    val moneySummary: Judgement
+    override val moneySummary: Judgement
         get() = if (money >= 11) {
             Judgement(3, money, "逆天")
         } else if (money >= 9) {
@@ -203,7 +204,7 @@ data class Attribute @JvmOverloads constructor(
             Judgement(0, money, "地狱")
         }
 
-    val spiritSummary: Judgement
+    override val spiritSummary: Judgement
         get() = if (spirit >= 11) {
             Judgement(3, spirit, "天命")
         } else if (spirit >= 9) {

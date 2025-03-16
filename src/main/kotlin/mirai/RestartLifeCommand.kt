@@ -4,7 +4,7 @@ package com.github.hatoyuze.restarter.mirai
 
 import com.github.hatoyuze.restarter.PluginMain
 import com.github.hatoyuze.restarter.draw.GameLayoutDrawer
-import com.github.hatoyuze.restarter.game.LifeEngine
+import com.github.hatoyuze.restarter.game.*
 import com.github.hatoyuze.restarter.game.data.Talent
 import com.github.hatoyuze.restarter.game.data.UserEvent
 import com.github.hatoyuze.restarter.game.entity.impl.LifeSave.Companion.decodeBase64
@@ -14,6 +14,7 @@ import com.github.hatoyuze.restarter.mirai.config.CommandLimitData.isUserOverLim
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.Limit.Companion.isNone
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.Limit.Companion.userDailyGamingLimit
+import com.github.hatoyuze.restarter.mirai.config.GameConfig.PaginatedSendingWays.*
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.defaultSpirit
 import com.github.hatoyuze.restarter.mirai.config.GameSaveData
 import net.mamoe.mirai.console.command.CommandContext
@@ -21,9 +22,7 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.isNotUser
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.PermissionDeniedException
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.buildMessageChain
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.time.Instant
 import java.time.ZoneId
@@ -132,24 +131,21 @@ object RestartLifeCommand : CompositeCommand(
                 }
             }
 
-            quote(buildMessageChain {
-                images.onEach { image ->
-                    +image
-                }
-
-                +buildString {
-                    appendLine("游戏结算：")
-                    with(engine.ratingStatus) {
-                        appendLine("颜值：${appearance.value} ${appearance.judge}")
-                        appendLine("家境：${money.value} ${money.judge}")
-                        appendLine("乐观：${spirit.value} ${spirit.judge}")
-                        appendLine("智力：${intelligent.value} ${intelligent.judge}")
-                        appendLine("力量：${strength.value} ${strength.judge}")
-                        appendLine("总分：${sum.value} ${sum.judge}")
+            when(GameConfig.paginatedSetting) {
+                FORWARDING -> buildForwardMessage(subject) {
+                    sender.user!! says buildMessageChain { buildRatingStatusContent(engine.ratingSummary) }
+                    images.onEach { image ->
+                        sender.user!! says image
                     }
                 }
+                NEVER_PAGINATED,FOLLOWING -> buildMessageChain {
+                    images.onEach { image ->
+                        +image
+                    }
+                    buildRatingStatusContent(engine.ratingSummary)
+                }
+            }
 
-            })
             GameSaveData.save(engine.life, sender.user)
         }
     }
@@ -239,20 +235,20 @@ object RestartLifeCommand : CompositeCommand(
                 }
             }
 
-            quote(buildMessageChain {
-                images.onEach { image ->
-                    +image
+            when(GameConfig.paginatedSetting) {
+                FORWARDING -> buildForwardMessage(subject) {
+                    sender.user!! says buildMessageChain { buildRatingStatusContent(data.content.property.attribute) }
+                    images.onEach { image ->
+                        sender.user!! says image
+                    }
                 }
-                with(content.property.attribute) {
-                    appendLine("Ta 的人生模拟器评分：")
-                    appendLine("颜值：${appearanceSummary.value} ${appearanceSummary.judge}")
-                    appendLine("家境：${moneySummary.value} ${moneySummary.judge}")
-                    appendLine("乐观：${spiritSummary.value} ${spiritSummary.judge}")
-                    appendLine("智力：${intelligentSummary.value} ${intelligentSummary.judge}")
-                    appendLine("力量：${strengthSummary.value} ${strengthSummary.judge}")
-                    append("总分：${sumSummary.value} ${sumSummary.judge}")
+                NEVER_PAGINATED,FOLLOWING -> buildMessageChain {
+                    images.onEach { image ->
+                        +image
+                    }
+                    buildRatingStatusContent(data.content.property.attribute)
                 }
-            })
+            }
         }
 
 
@@ -345,7 +341,7 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
             add(
                 sender = commandContext.sender.user!!, message = PlainText(
                     buildString {
-                        with(engine.ratingStatus) {
+                        with(engine.ratingSummary) {
                             appendLine("颜值：${appearance.value} ${appearance.judge}")
                             appendLine("家境：${money.value} ${money.judge}")
                             appendLine("乐观：${spirit.value} ${spirit.judge}")
@@ -571,5 +567,19 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
         return if (enableAssignSprite) {
             assignedValues
         }else assignedValues.plus(defaultSpirit.get())
+    }
+
+    private fun MessageChainBuilder.buildRatingStatusContent(ratingSummary: IRatingStatus) {
+        +buildString {
+            appendLine("游戏结算：")
+            with(ratingSummary) {
+                appendLine("颜值：${appearance.value} ${appearance.judge}")
+                appendLine("家境：${money.value} ${money.judge}")
+                appendLine("乐观：${spirit.value} ${spirit.judge}")
+                appendLine("智力：${intelligent.value} ${intelligent.judge}")
+                appendLine("力量：${strength.value} ${strength.judge}")
+                appendLine("总分：${sum.value} ${sum.judge}")
+            }
+        }
     }
 }
