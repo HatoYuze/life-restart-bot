@@ -33,7 +33,7 @@ class GameProgressLayoutDrawer(
     private val subTitleFont by lazy { font0.apply { size = 30f } }
 
     private val textLineHeight by lazy { defaultFont.measureText("你出生了。").let { it.bottom - it.top } }
-    private val textWeight = defaultFont.measureTextWidth("第 500 岁")
+    private val textWeight = defaultFont.measureTextWidth("第 500 岁 ")
     private val surface by lazy {
         val topLife = pagedLife.first()
         fun getLifeLines(): Int = topLife.sumOf { it.linesCount() }
@@ -45,7 +45,7 @@ class GameProgressLayoutDrawer(
 
 
     private val life = life0.toList().map { it.warpString() }
-    private val pagedLife = if (life.size > 105) life.chunked(100) else listOf(life)
+    private val pagedLife = if (life.size > 105) life.chunked(101) else listOf(life)
     private val canvas = surface.canvas
     private var lastY = INIT_EVENT_MESSAGE_Y
 
@@ -56,21 +56,21 @@ class GameProgressLayoutDrawer(
         isAntiAlias = true
     }
 
-    private fun drawBackground(canvas: Canvas = this.canvas) {
+    private fun drawBackground(surface: Surface, initTop: Float = INIT_EVENT_MESSAGE_Y) {
         val paint = Paint {
             color4f = Color4f(BACKGROUND_COLOR4F)
         }
         val rect = Rect.makeWH(surface.width.toFloat(), surface.height.toFloat())
-        canvas.drawRect(rect, paint)
+        surface.canvas.drawRect(rect, paint)
 
         paint.color4f = Color4f(EVENT_BACKGROUND_COLOR4F)
         canvas.drawRRectWithEdge(
             backgroundColor4f = Color4f(EVENT_BACKGROUND_COLOR4F),
             rRect = makeXYWH(
                 30f,
-                INIT_EVENT_MESSAGE_Y,
+                initTop - 3f,
                 surface.width - 1.5f * MESSAGE_START_X,
-                surface.height - INIT_EVENT_MESSAGE_Y - 50f,
+                surface.height - initTop - 50f,
                 15f
             )
         )
@@ -100,7 +100,7 @@ class GameProgressLayoutDrawer(
     }
 
     suspend fun draw(): List<Surface> {
-        drawBackground()
+        drawBackground(surface)
         drawTitle()
         drawSelectedTalent()
 
@@ -253,7 +253,7 @@ class GameProgressLayoutDrawer(
         fun draw(): Deferred<Surface> =
             coroutineScope.async {
                 if (enableCoverBackground) {
-                    drawBackground(localSurface.canvas)
+                    drawBackground(localSurface,drawingY)
                 }
 
                 for ((idx, data) in rangedLife.withIndex()) {
