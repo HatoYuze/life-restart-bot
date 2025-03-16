@@ -28,6 +28,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.min
 import kotlin.random.Random
@@ -358,6 +359,23 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
         GameSaveData.save(engine.life, sender.user)
     }
 
+    @Description("获取指定事件的详情信息")
+    @SubCommand
+    suspend fun event(commandContext: CommandContext, name: String) {
+        commandContext.testPermission()
+
+        val id: Int = UserEvent.data.entries
+            .filter { it.value.eventName.contains(name) }
+            .minByOrNull { abs(it.value.eventName.length - name.length) }
+            ?.key
+            ?: run {
+                commandContext.quote("没有找到内容相符 $name 的事件哦！")
+                return
+            }
+
+        talent(commandContext, id)
+    }
+
 
     @Description("获取指定事件的详情信息")
     @SubCommand
@@ -401,6 +419,25 @@ ${engine.life.talents.joinToString("\n") { it.introduction }}
         }
         quote(result)
     }
+
+
+
+    @Description("查询天赋的详细信息")
+    @SubCommand
+    suspend fun talent(commandContext: CommandContext, name: String) {
+        commandContext.testPermission()
+        val id: Int = Talent.data.entries
+            .filter { it.value.name.startsWith(name) }
+            .minByOrNull { abs(it.value.name.length - name.length) }
+            ?.key
+            ?: run {
+                commandContext.quote("没有找到名称相符 $name 的天赋哦！")
+                return
+            }
+
+        talent(commandContext, id)
+    }
+
 
     @Description("查询天赋的详细信息")
     @SubCommand
