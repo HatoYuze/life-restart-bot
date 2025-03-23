@@ -65,7 +65,7 @@ data class UserEvent @JvmOverloads constructor(
                 .apply {
                     this[REPLACEABLE_EVENT_ID] = UserEvent(
                         id = REPLACEABLE_EVENT_ID,
-                        eventName = "你偶然间发现地平线竟然出现了无端的黑块...\\n你想要逃、   跑...\\n远在你动身前，世界崩塌了。",
+                        eventName = "你偶然间发现地平线竟然出现了无端的黑块...\n你想要逃、   跑...\n远在你动身前，世界崩塌了。",
                         noRandom = true,
                         grade = 2,
                         branch = listOf(
