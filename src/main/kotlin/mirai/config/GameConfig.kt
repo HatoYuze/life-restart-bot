@@ -93,7 +93,7 @@ object GameConfig : AutoSavePluginConfig("game") {
         }
 
         fun ofTalentManger() =
-            CustomizedTalentManager(prob1,prob2,prob3)
+            CustomizedTalentManager(prob3, prob2, prob1)
     }
 
 
