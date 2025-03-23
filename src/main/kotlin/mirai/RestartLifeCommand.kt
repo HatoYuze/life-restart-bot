@@ -144,7 +144,7 @@ object RestartLifeCommand : CompositeCommand(
                     }
                     buildRatingStatusContent(engine.ratingSummary)
                 }
-            }
+            }.sendTo(subject)
 
             GameSaveData.save(engine.life, sender.user)
         }
@@ -248,7 +248,7 @@ object RestartLifeCommand : CompositeCommand(
                     }
                     buildRatingStatusContent(data.content.property.attribute)
                 }
-            }
+            }.sendTo(subject)
         }
 
 
