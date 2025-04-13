@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.hatoyuze.restarter"
-version = "0.6.0"
+version = "0.6.1"
 
 repositories {
     if (System.getenv("CI")?.toBoolean() != true) {
@@ -23,8 +23,7 @@ dependencies {
 
 dependencies {
     testImplementation(kotlin("test"))
-
-
+    
     // test for drawing function
     testImplementation("org.jetbrains.skiko:skiko-awt-runtime-macos-x64:0.7.67")
     testImplementation("org.jetbrains.skiko:skiko-awt-runtime-linux-x64:0.7.67")
@@ -33,4 +32,7 @@ dependencies {
     // dataframe for Uploader
     testImplementation("org.jetbrains.kotlinx:dataframe-core:0.15.0")
     testImplementation("org.jetbrains.kotlinx:dataframe-excel:0.15.0")
+
+    implementation("com.akuleshov7:ktoml-core:0.6.0")
+    implementation("com.akuleshov7:ktoml-file:0.6.0")
 }

@@ -5,7 +5,7 @@ import com.github.hatoyuze.restarter.mirai.config.CommandLimitData
 import com.github.hatoyuze.restarter.mirai.config.GameConfig
 import com.github.hatoyuze.restarter.mirai.config.GameConfig.ifNull
 import com.github.hatoyuze.restarter.mirai.config.GameSaveData
-import com.github.hatoyuze.restarter.mirai.config.RegisterEventConfig
+import com.github.hatoyuze.restarter.mirai.config.Register
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
@@ -61,9 +61,10 @@ object PluginMain : KotlinPlugin(
         CommandManager.INSTANCE.registerCommand(
             RestartLifeCommand
         )
-        RegisterEventConfig.reload()
+
+        val register = Register()
         GameConfig.reload()
-        RegisterEventConfig.handleEvent()
+        register.config.handleEvent()
         CommandLimitData.reload()
 
         GameSaveData.reload()
